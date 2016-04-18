@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MusicArtists</string>
+    <string name="action_settings">Settings</string>
+    <string name="albums_and_tracks" formatted="false">%d альбомов, %d песен</string>
+    <string name="album_cover_transition_name">image_album_transition</string>
+    <string name="about">Биография</string>
+</resources>

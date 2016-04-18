@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="artist"
+            type="com.volha.yandex.school.musicartists.mainlist.ArtistViewModel"/>
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/list_item_height"
+        android:orientation="horizontal"
+        android:padding="@dimen/activity_vertical_margin"
+        android:onClick="@{artist.onItemClick}">
+
+        <RelativeLayout
+            android:layout_width="@dimen/picture_measure"
+            android:layout_height="@dimen/picture_measure">
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="@dimen/progressbar_measure"
+                android:layout_height="@dimen/progressbar_measure"
+                android:layout_centerInParent="true"/>
+
+            <ImageView
+                android:id="@+id/album_cover"
+                android:layout_width="@dimen/picture_measure"
+                android:layout_height="@dimen/picture_measure"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:adjustViewBounds="true"
+                android:transitionName="@string/album_cover_transition_name"/>
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/picture_measure"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@{artist.name}"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{artist.genres}"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom"
+                android:text='@{(@plurals/album(artist.albums,artist.albums,artist.albums,artist.albums,artist.albums,artist.albums)) + ", " + (@plurals/track(artist.tracks,artist.tracks,artist.tracks))}'/>
+        </LinearLayout>
+    </LinearLayout>
+</layout>
