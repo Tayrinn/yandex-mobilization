@@ -18,7 +18,4 @@ public class ArtistViewHolder extends RecyclerView.ViewHolder {
         this.binding.setArtist( viewModel );
     }
 
-    public interface OnItemClickListener {
-        void onItemClick();
-    }
 }

@@ -6,14 +6,17 @@ package com.volha.yandex.school.musicartists.data;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder( {
         "id",
         "name",
@@ -24,14 +27,15 @@ import java.util.List;
         "description",
         "cover"
 })
-public class Artist {
+public class Artist extends RealmObject {
 
+    @PrimaryKey
     @JsonProperty("id")
     private Integer id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("genres")
-    private List<String> genres = new ArrayList<>();
+    private RealmList<RealmString> genres = new RealmList<>();
     @JsonProperty("tracks")
     private Integer tracks;
     @JsonProperty("albums")
@@ -79,7 +83,7 @@ public class Artist {
      * @return The genres
      */
     @JsonProperty("genres")
-    public List<String> getGenres() {
+    public RealmList<RealmString> getGenres() {
         return genres;
     }
 
@@ -87,7 +91,7 @@ public class Artist {
      * @param genres The genres
      */
     @JsonProperty("genres")
-    public void setGenres( List<String> genres ) {
+    public void setGenres( RealmList<RealmString> genres ) {
         this.genres = genres;
     }
 
@@ -99,10 +103,10 @@ public class Artist {
         StringBuilder sb = new StringBuilder();
         if ( genres.size() == 0 )
             return "";
-        sb.append( genres.get( 0 ) );
+        sb.append( genres.get( 0 ).getValue() );
         for ( int i = 1; i < genres.size(); ++i ) {
             sb.append( ", " );
-            sb.append( genres.get( i ) );
+            sb.append( genres.get( i ).getValue() );
         }
         return sb.toString();
     }

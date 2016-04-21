@@ -7,25 +7,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ActivityDetailsBinding;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
+import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
 
-import java.io.IOException;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * Created by Volha on 17.04.2016.
  */
 public class DetailActivity extends AppCompatActivity {
 
-    public final static String TAG_ARTIST = "tag_artist";
-
-    private Artist artist;
-
-    //todo: add shape in bottom image
+    public final static String TAG_ARTIST_ID = "tag_artist_id";
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -35,16 +32,17 @@ public class DetailActivity extends AppCompatActivity {
         ArtistDetailViewModel model = new ArtistDetailViewModel();
         binding.setArtist( model );
 
-        // get artist from intent, convert from json
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonArtist = getIntent().getStringExtra( TAG_ARTIST );
-        try {
-            artist = mapper.readValue( jsonArtist, Artist.class );
-        } catch ( IOException e ) {
-            e.printStackTrace();
-        }
+        // get artistId from intent
+        int artistId = getIntent().getIntExtra( TAG_ARTIST_ID, 0 );
+
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
+        Realm realm = Realm.getInstance( realmConfig );
+
+        Artist artist = realm.where( Artist.class ).equalTo( "id", artistId ).findFirst();
+        realm.close();
+
         model.setArtist( artist );
-        model.listener = onBrowseClickListener;
+        model.setListener( onBrowserClickListener );
 
         setContentView( binding.getRoot() );
 
@@ -70,7 +68,7 @@ public class DetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected( item );
     }
 
-    OnBrowseClickListener onBrowseClickListener = new OnBrowseClickListener() {
+    OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
         @Override
         public void onBrowseClick( String link ) {
             Intent intent = new Intent( Intent.ACTION_VIEW );
@@ -79,7 +77,5 @@ public class DetailActivity extends AppCompatActivity {
         }
     };
 
-    public interface OnBrowseClickListener {
-        void onBrowseClick(String link);
-    }
+
 }

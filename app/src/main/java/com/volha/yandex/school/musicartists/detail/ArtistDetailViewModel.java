@@ -5,7 +5,6 @@ import android.databinding.ObservableField;
 import android.databinding.ObservableInt;
 import android.view.View;
 
-import com.volha.yandex.school.musicartists.DetailActivity;
 import com.volha.yandex.school.musicartists.data.Artist;
 
 /**
@@ -21,7 +20,7 @@ public class ArtistDetailViewModel extends BaseObservable {
     public ObservableInt albums = new ObservableInt();
     public ObservableInt tracks = new ObservableInt();
 
-    public DetailActivity.OnBrowseClickListener listener;
+    private OnBrowserClickListener listener;
 
     public void setArtist( Artist artist ) {
 
@@ -35,5 +34,9 @@ public class ArtistDetailViewModel extends BaseObservable {
 
     public void onBrowseClick( View view ) {
         listener.onBrowseClick( link.get() );
+    }
+
+    public void setListener( OnBrowserClickListener listener ) {
+        this.listener = listener;
     }
 }

@@ -16,9 +16,13 @@ public class ArtistViewModel extends BaseObservable {
     public ObservableInt albums = new ObservableInt();
     public ObservableInt tracks = new ObservableInt();
 
-    public ArtistViewHolder.OnItemClickListener listener;
+    private OnArtistListItemClickListener listener;
 
     public void onItemClick(View view) {
         listener.onItemClick();
+    }
+
+    public void setListener( OnArtistListItemClickListener listener ) {
+        this.listener = listener;
     }
 }

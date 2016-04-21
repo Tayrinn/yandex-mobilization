@@ -10,8 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
@@ -42,7 +40,8 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         this.imageOptions = new DisplayImageOptions.Builder()
                 .cacheOnDisk( true )
                 .cacheInMemory( true )
-                // TODO : add stub image
+                .showImageForEmptyUri( R.drawable.musician )
+                .showImageOnFail( R.drawable.musician )
                 .build();
         this.loadingListener = new ImageLoadingListener() {
             @Override
@@ -84,26 +83,27 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         holder.viewModel.tracks.set( artist.getTracks() );
         holder.viewModel.name.set( artist.getName() );
         holder.viewModel.genres.set( artist.getGenresString() );
-        holder.viewModel.listener = new ArtistViewHolder.OnItemClickListener() {
+        holder.viewModel.setListener( new OnArtistListItemClickListener() {
             @Override
             public void onItemClick() {
                 Intent intent = new Intent( context, DetailActivity.class );
-                // convert artist in json, to send to DetailActivity
-                ObjectMapper mapper = new ObjectMapper();
-                String jsonArtist = null;
-                try {
-                    jsonArtist = mapper.writeValueAsString( artist );
-                } catch ( JsonProcessingException e ) {
-                    e.printStackTrace();
-                }
-                intent.putExtra( DetailActivity.TAG_ARTIST, jsonArtist );
-                // transition animations
+                intent.putExtra( DetailActivity.TAG_ARTIST_ID, artist.getId() );
+                // transition animations for album cover
                 ActivityOptionsCompat options = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation( (MainActivity) context, ( View ) holder.binding.albumCover, context.getString( R.string.album_cover_transition_name ) );
+                        makeSceneTransitionAnimation(
+                                (MainActivity) context,
+                                holder.binding.albumCover,
+                                context.getString( R.string.album_cover_transition_name )
+                        );
                 context.startActivity( intent, options.toBundle() );
             }
-        };
-        imageLoader.displayImage( artist.getCover().getSmall(), holder.binding.albumCover, imageOptions, loadingListener );
+        });
+        imageLoader.displayImage(
+                artist.getCover().getSmall(),
+                holder.binding.albumCover,
+                imageOptions,
+                loadingListener
+        );
     }
 
     @Override

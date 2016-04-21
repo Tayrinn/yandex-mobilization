@@ -4,16 +4,20 @@ package com.volha.yandex.school.musicartists.data;
  * Created by Volha on 17.04.2016.
  * generated with jsonschema2pojo.org
  */
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import io.realm.RealmObject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder( {
         "small",
         "big"
 })
-public class Cover {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Cover extends RealmObject {
 
     @JsonProperty("small")
     private String small;

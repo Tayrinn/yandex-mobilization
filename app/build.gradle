@@ -31,9 +31,11 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
 
+    //Jackson
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.0'
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
 
+    //Image downloader
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
 
     //RxAndroid
@@ -45,10 +47,5 @@ dependencies {
     compile 'com.squareup.retrofit:converter-jackson:2.0.0-beta1'
     compile 'com.squareup.retrofit:adapter-rxjava:2.0.0-beta1'
 
-    /*compile 'io.reactivex:rxjava:1.0.12'
-    compile 'io.reactivex:rxandroid:1.0.1'
-
-    compile 'com.squareup.retrofit2:retrofit:2.0.2'
-    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta4'
-    compile 'com.squareup.retrofit2:converter-jackson:2.0.0-beta4'*/
+    compile 'de.psdev.licensesdialog:licensesdialog:1.8.0'
 }
