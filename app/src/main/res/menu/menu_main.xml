@@ -1,10 +1,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context="com.volha.yandex.school.musicartists.MainActivity">
+      tools:context=".ui.MainActivity">
     <item
         android:id="@+id/action_notices"
-        android:orderInCategory="100"
         android:title="@string/action_notices"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/action_feedback"
+        android:title="@string/action_feedback"
         app:showAsAction="never"/>
 </menu>

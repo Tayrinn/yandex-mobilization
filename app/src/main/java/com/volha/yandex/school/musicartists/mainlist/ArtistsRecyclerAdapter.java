@@ -1,9 +1,6 @@
 package com.volha.yandex.school.musicartists.mainlist;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,8 +11,7 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.volha.yandex.school.musicartists.DetailActivity;
-import com.volha.yandex.school.musicartists.MainActivity;
+import com.volha.yandex.school.musicartists.ui.MainFragment;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ListItemArtistBinding;
@@ -31,12 +27,13 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
     private ImageLoader imageLoader;
     private DisplayImageOptions imageOptions;
     private ImageLoadingListener loadingListener;
-    private Context context;
+    private MainFragment fragment;
 
-    public ArtistsRecyclerAdapter( ArrayList<Artist> artists, ImageLoader imageLoader, Context context ) {
+    public ArtistsRecyclerAdapter( ArrayList<Artist> artists, ImageLoader imageLoader, MainFragment fragment ) {
         this.artists = artists;
         this.imageLoader = imageLoader;
-        this.context = context;
+        this.fragment = fragment;
+        setHasStableIds( true );
         this.imageOptions = new DisplayImageOptions.Builder()
                 .cacheOnDisk( true )
                 .cacheInMemory( true )
@@ -86,16 +83,8 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         holder.viewModel.setListener( new OnArtistListItemClickListener() {
             @Override
             public void onItemClick() {
-                Intent intent = new Intent( context, DetailActivity.class );
-                intent.putExtra( DetailActivity.TAG_ARTIST_ID, artist.getId() );
-                // transition animations for album cover
-                ActivityOptionsCompat options = ActivityOptionsCompat.
-                        makeSceneTransitionAnimation(
-                                (MainActivity) context,
-                                holder.binding.albumCover,
-                                context.getString( R.string.album_cover_transition_name )
-                        );
-                context.startActivity( intent, options.toBundle() );
+
+                fragment.startDetailFragment( holder.binding.albumCover, artist.getId() );
             }
         });
         imageLoader.displayImage(
@@ -110,6 +99,11 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
     public int getItemCount() {
 
         return artists.size();
+    }
+
+    @Override
+    public long getItemId( int position ) {
+        return artists.get( position ).getId();
     }
 
     public void updateData( ArrayList<Artist> artists ) {
