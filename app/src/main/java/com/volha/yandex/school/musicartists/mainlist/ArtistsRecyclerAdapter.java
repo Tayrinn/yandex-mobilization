@@ -1,6 +1,8 @@
 package com.volha.yandex.school.musicartists.mainlist;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +13,10 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
-import com.volha.yandex.school.musicartists.ui.MainFragment;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ListItemArtistBinding;
+import com.volha.yandex.school.musicartists.ui.MainFragment;
 
 import java.util.ArrayList;
 
@@ -67,9 +69,20 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
     @Override
     public ArtistViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
 
-        LayoutInflater inflater = LayoutInflater.from( parent.getContext() );
-
-        return new ArtistViewHolder( ListItemArtistBinding.inflate( inflater, parent, false ) );
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from( context );
+        final ArtistViewHolder holder = new ArtistViewHolder( ListItemArtistBinding.inflate( inflater, parent, false ) );
+        holder.viewModel.setListener( new OnArtistListItemClickListener() {
+            @Override
+            public void onItemClick() {
+                int position = holder.getAdapterPosition();
+                if ( position != RecyclerView.NO_POSITION ) {
+                    Artist artist = artists.get( position );
+                    fragment.startDetailFragment( holder.binding.albumCover, artist.getId() );
+                }
+            }
+        } );
+        return holder;
     }
 
     @Override
@@ -80,19 +93,15 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         holder.viewModel.tracks.set( artist.getTracks() );
         holder.viewModel.name.set( artist.getName() );
         holder.viewModel.genres.set( artist.getGenresString() );
-        holder.viewModel.setListener( new OnArtistListItemClickListener() {
-            @Override
-            public void onItemClick() {
-
-                fragment.startDetailFragment( holder.binding.albumCover, artist.getId() );
-            }
-        });
         imageLoader.displayImage(
                 artist.getCover().getSmall(),
                 holder.binding.albumCover,
                 imageOptions,
                 loadingListener
         );
+        Context context = holder.binding.albumCover.getContext();
+        ViewCompat.setTransitionName(holder.binding.albumCover, position + context.getString( R.string.album_cover_transition_name ) );
+
     }
 
     @Override

@@ -26,8 +26,6 @@ import com.volha.yandex.school.musicartists.data.Cover;
 import com.volha.yandex.school.musicartists.data.RealmString;
 import com.volha.yandex.school.musicartists.mainlist.ArtistsRecyclerAdapter;
 import com.volha.yandex.school.musicartists.retrofit.ApiServices;
-import com.volha.yandex.school.musicartists.ui.DetailFragment;
-import com.volha.yandex.school.musicartists.ui.MainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,16 +149,16 @@ public class MainFragment extends Fragment {
     public void startDetailFragment( View transitionElement, int artistId ) {
 
         DetailFragment details = DetailFragment.newInstance( artistId );
-//        setSharedElementReturnTransition( TransitionInflater.from(getActivity()).inflateTransition(R.transition.change_image_transform) );
-//        details.setSharedElementEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(R.transition.change_image_transform));
+        details.setSharedElementReturnTransition( new TransitionAnimation() );
+        details.setSharedElementEnterTransition( new TransitionAnimation());
         if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
-            setExitTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.slide_bottom));
-            details.setEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.slide_top));
+            setExitTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.fade));
+            details.setEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.fade));
         }
 
         getFragmentManager()
                 .beginTransaction()
-//                .addSharedElement( transitionElement, getString( R.string.album_cover_transition_name ) )
+                .addSharedElement( transitionElement, getString( R.string.album_cover_transition_name ) )
                 .replace( R.id.contentPanel, details, DetailFragment.TAG )
                 .addToBackStack( DetailFragment.TAG )
                 .commit();
