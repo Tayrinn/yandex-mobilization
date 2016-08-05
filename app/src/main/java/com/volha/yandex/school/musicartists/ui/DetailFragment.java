@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.FragmentDetailsBinding;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
@@ -65,7 +67,7 @@ public class DetailFragment extends Fragment {
                 binding.background,
                 new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
         );
-
+        ViewCompat.setTransitionName(binding.background, artistId + getString( R.string.album_cover_transition_name ));
         setRetainInstance( true );
         return binding.getRoot();
     }

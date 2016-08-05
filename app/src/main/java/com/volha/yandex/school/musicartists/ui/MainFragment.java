@@ -111,10 +111,10 @@ public class MainFragment extends Fragment {
         compositeSubscription.add(
                 apiServices
                         .getArtists()
-                        .cache()
                         .timeout( 30, TimeUnit.SECONDS )
                         .observeOn( AndroidSchedulers.mainThread() )
                         .subscribeOn( Schedulers.newThread() )
+
                         .subscribe( new Subscriber<List<Artist>>() {
                             @Override
                             public void onCompleted() {
@@ -146,7 +146,13 @@ public class MainFragment extends Fragment {
         );
     }
 
-    public void startDetailFragment( View transitionElement, int artistId ) {
+    @Override
+    public void onStop() {
+        super.onStop();
+        compositeSubscription.unsubscribe();
+    }
+
+    public void startDetailFragment(View transitionElement, int artistId ) {
 
         DetailFragment details = DetailFragment.newInstance( artistId );
         details.setSharedElementReturnTransition( new TransitionAnimation() );
@@ -158,7 +164,7 @@ public class MainFragment extends Fragment {
 
         getFragmentManager()
                 .beginTransaction()
-                .addSharedElement( transitionElement, getString( R.string.album_cover_transition_name ) )
+                .addSharedElement( transitionElement, artistId + getString( R.string.album_cover_transition_name ) )
                 .replace( R.id.contentPanel, details, DetailFragment.TAG )
                 .addToBackStack( DetailFragment.TAG )
                 .commit();

@@ -27,6 +27,7 @@ public class TransitionAnimation extends TransitionSet {
         init();
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void init() {
         setOrdering(ORDERING_TOGETHER);
         addTransition(new ChangeBounds()).
