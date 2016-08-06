@@ -31,8 +31,7 @@
                 android:layout_width="@dimen/picture_measure"
                 android:layout_height="@dimen/picture_measure"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:adjustViewBounds="true"
-                android:transitionName="@string/album_cover_transition_name"/>
+                android:adjustViewBounds="true"/>
         </RelativeLayout>
 
         <LinearLayout

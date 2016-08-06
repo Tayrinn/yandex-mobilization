@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -30,6 +31,8 @@ public class DetailFragment extends Fragment {
     public final static String TAG = "detail_fragment";
     public final static String TAG_ARTIST_ID = "tag_artist_id";
 
+    int artistId;
+
     public static DetailFragment newInstance( int artistId ) {
         DetailFragment fragment = new DetailFragment();
         Bundle argument = new Bundle();
@@ -45,7 +48,7 @@ public class DetailFragment extends Fragment {
         ArtistDetailViewModel model = new ArtistDetailViewModel();
         binding.setArtist( model );
 
-        int artistId = getArguments().getInt( TAG_ARTIST_ID );
+        artistId = getArguments().getInt( TAG_ARTIST_ID );
 
         RealmConfiguration realmConfig = new RealmConfiguration.Builder( getContext() ).build();
         Realm realm = Realm.getInstance( realmConfig );
@@ -67,9 +70,16 @@ public class DetailFragment extends Fragment {
                 binding.background,
                 new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
         );
-        ViewCompat.setTransitionName(binding.background, artistId + getString( R.string.album_cover_transition_name ));
+
         setRetainInstance( true );
         return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ImageView image = (ImageView) view.findViewById(R.id.background);
+        ViewCompat.setTransitionName(image, artistId + getString( R.string.album_cover_transition_name ));
     }
 
     OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {

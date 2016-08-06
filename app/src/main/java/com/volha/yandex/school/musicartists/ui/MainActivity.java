@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case android.R.id.home:
                 getSupportFragmentManager()
-                        .popBackStack( DetailFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        .popBackStack( DetailFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE );
                 break;
         }
 
