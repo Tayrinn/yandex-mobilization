@@ -96,7 +96,6 @@ public class MainFragment extends Fragment {
             }
         } );
 
-        setRetainInstance( true );
         return rootView;
     }
 
@@ -159,7 +158,7 @@ public class MainFragment extends Fragment {
         details.setSharedElementEnterTransition( new TransitionAnimation());
         if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
             setExitTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.fade));
-            details.setEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.fade));
+            details.setEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.slide_bottom));
         }
 
         getFragmentManager()
