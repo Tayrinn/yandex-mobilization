@@ -99,9 +99,7 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
                 imageOptions,
                 loadingListener
         );
-        Context context = holder.binding.albumCover.getContext();
-        ViewCompat.setTransitionName(holder.binding.albumCover, position + context.getString( R.string.album_cover_transition_name ) );
-
+        ViewCompat.setTransitionName(holder.binding.albumCover, artist.getId() + fragment.getString( R.string.album_cover_transition_name ) );
     }
 
     @Override
