@@ -1,5 +1,7 @@
 package com.volha.yandex.school.musicartists;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -9,6 +11,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,8 +19,8 @@ import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
-import com.volha.yandex.school.musicartists.data.Cover;
-import com.volha.yandex.school.musicartists.data.RealmString;
+import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
+import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.mainlist.ArtistsRecyclerAdapter;
 import com.volha.yandex.school.musicartists.retrofit.ApiServices;
 
@@ -26,9 +29,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import de.psdev.licensesdialog.LicensesDialog;
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -41,8 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private ArtistsRecyclerAdapter adapter;
-    private Realm realm;
+//    private Realm realm;
     private CompositeSubscription compositeSubscription = new CompositeSubscription();
+    private SQLiteDatabase db;
+    private DbBackend dbBackend = new DbBackend();
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -54,20 +56,23 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
-        realm = Realm.getInstance( realmConfig );
-        RealmResults<Artist> artists = realm.where( Artist.class ).findAll();
+        db = new ArtistsOpenHelper(this).getWritableDatabase();
+        db.enableWriteAheadLogging();
+
+//        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
+//        realm = Realm.getInstance( realmConfig );
+//        RealmResults<Artist> artists = realm.where( Artist.class ).findAll();
 
         ImageLoader imageLoader = ImageLoader.getInstance();
-
-        adapter = new ArtistsRecyclerAdapter( getArrayListFromRealmResult( artists ), imageLoader, this );
+        Cursor cursorArtists = dbBackend.getArtistsAndCovers(db);
+        adapter = new ArtistsRecyclerAdapter( getArrayListFromCursor(cursorArtists), imageLoader, this );
 
         recyclerView = ( RecyclerView ) findViewById( R.id.recyclerView );
         recyclerView.setLayoutManager( new LinearLayoutManager( this ) );
         recyclerView.setItemAnimator( new DefaultItemAnimator() );
         recyclerView.setAdapter( adapter );
 
-        if ( artists.size() == 0 ) { // if there is no data in db, show progress
+        if ( cursorArtists.getCount() == 0 ) { // if there is no data in db, show progress
             recyclerView.setVisibility( View.GONE );
             progressBar.setVisibility( View.VISIBLE );
         }
@@ -80,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 downloadArtists();
             }
         } );
-
+        cursorArtists.close();
         downloadArtists();
     }
 
@@ -116,12 +121,19 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext( List<Artist> artists ) {
-                        realm.beginTransaction();
-                        realm.clear( Artist.class ); // delete all manually
-                        realm.clear( Cover.class ); // because realm don't have
-                        realm.clear( RealmString.class ); // cascade delete
-                        realm.copyToRealm( artists );
-                        realm.commitTransaction();
+                        db.beginTransaction();
+                        dbBackend.clearAll(db);
+                        for (Artist artist : artists) {
+                            Log.d("insert", "id=" + dbBackend.insertArtist(db, artist));
+                        }
+                        db.setTransactionSuccessful();
+                        db.endTransaction();
+//                        realm.beginTransaction();
+//                        realm.clear( Artist.class ); // delete all manually
+//                        realm.clear( Cover.class ); // because realm don't have
+//                        realm.clear( RealmString.class ); // cascade delete
+//                        realm.copyToRealm( artists );
+//                        realm.commitTransaction();
                         adapter.updateData( ( ArrayList<Artist> ) artists );
                     }
                 } )
@@ -153,8 +165,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        realm.close();
+//        realm.close();
         compositeSubscription.unsubscribe();
+        db.close();
     }
 
     @Override
@@ -171,11 +184,15 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected( item );
     }
 
-    private ArrayList<Artist> getArrayListFromRealmResult( RealmResults<Artist> artists ) {
-        ArrayList<Artist> result = new ArrayList<>( artists.size() );
-        for ( Artist artist : artists ) {
-            result.add( artist );
-        }
+
+    private ArrayList<Artist> getArrayListFromCursor(Cursor cursor) {
+        ArrayList<Artist> result = new ArrayList<>(cursor.getCount());
+        if ( cursor.getCount() == 0 )
+            return result;
+        cursor.moveToFirst();
+        do {
+            result.add(dbBackend.getArtistFromCursor(cursor));
+        } while (cursor.moveToNext());
         return result;
     }
 }

@@ -11,9 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
+import java.util.Arrays;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -27,15 +26,15 @@ import io.realm.annotations.PrimaryKey;
         "description",
         "cover"
 })
-public class Artist extends RealmObject {
+public class Artist {
 
-    @PrimaryKey
+
     @JsonProperty("id")
     private Integer id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("genres")
-    private RealmList<RealmString> genres = new RealmList<>();
+    private List<String> genres;
     @JsonProperty("tracks")
     private Integer tracks;
     @JsonProperty("albums")
@@ -83,16 +82,13 @@ public class Artist extends RealmObject {
      * @return The genres
      */
     @JsonProperty("genres")
-    public RealmList<RealmString> getGenres() {
+    public List<String> getGenres() {
         return genres;
     }
 
-    /**
-     * @param genres The genres
-     */
-    @JsonProperty("genres")
-    public void setGenres( RealmList<RealmString> genres ) {
-        this.genres = genres;
+
+    public void setGenresString( String separatedString ) {
+        this.genres = Arrays.asList(separatedString.split(","));
     }
 
     /*
@@ -103,10 +99,10 @@ public class Artist extends RealmObject {
         StringBuilder sb = new StringBuilder();
         if ( genres.size() == 0 )
             return "";
-        sb.append( genres.get( 0 ).getValue() );
+        sb.append( genres.get( 0 ) );
         for ( int i = 1; i < genres.size(); ++i ) {
             sb.append( ", " );
-            sb.append( genres.get( i ).getValue() );
+            sb.append( genres.get( i ) );
         }
         return sb.toString();
     }

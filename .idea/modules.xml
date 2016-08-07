@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MusicArtists.iml" filepath="$PROJECT_DIR$/MusicArtists.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/yandex-mobilization.iml" filepath="$PROJECT_DIR$/yandex-mobilization.iml" />
     </modules>
   </component>
 </project>

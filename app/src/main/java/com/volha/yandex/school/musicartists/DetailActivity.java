@@ -1,6 +1,8 @@
 package com.volha.yandex.school.musicartists;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,11 +13,10 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ActivityDetailsBinding;
+import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
+import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
 import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
-
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
 
 /**
  * Created by Volha on 17.04.2016.
@@ -35,11 +36,14 @@ public class DetailActivity extends AppCompatActivity {
         // get artistId from intent
         int artistId = getIntent().getIntExtra( TAG_ARTIST_ID, 0 );
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
-        Realm realm = Realm.getInstance( realmConfig );
-
-        Artist artist = realm.where( Artist.class ).equalTo( "id", artistId ).findFirst();
-        realm.close();
+//        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
+//        Realm realm = Realm.getInstance( realmConfig );
+        SQLiteDatabase db = new ArtistsOpenHelper(this).getReadableDatabase();
+        DbBackend dbBackend = new DbBackend();
+        Cursor artistCursor = dbBackend.getArtist(db, artistId);
+        artistCursor.moveToFirst();
+        Artist artist = dbBackend.getArtistFromCursor(artistCursor);
+//        realm.close();
 
         model.setArtist( artist );
         model.setListener( onBrowserClickListener );
