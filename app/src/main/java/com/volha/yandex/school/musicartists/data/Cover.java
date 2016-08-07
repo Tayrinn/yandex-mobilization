@@ -54,4 +54,24 @@ public class Cover {
     public void setBig( String big ) {
         this.big = big;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Cover)) return false;
+
+        Cover cover = (Cover) o;
+
+        if (getSmall() != null ? !getSmall().equals(cover.getSmall()) : cover.getSmall() != null)
+            return false;
+        return getBig() != null ? getBig().equals(cover.getBig()) : cover.getBig() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getSmall() != null ? getSmall().hashCode() : 0;
+        result = 31 * result + (getBig() != null ? getBig().hashCode() : 0);
+        return result;
+    }
 }

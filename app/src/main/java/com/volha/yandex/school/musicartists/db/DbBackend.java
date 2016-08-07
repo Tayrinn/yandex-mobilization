@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.VisibleForTesting;
 
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.data.Cover;
@@ -62,11 +63,20 @@ public class DbBackend implements DBContract {
         artist.setAlbums(cursor.getInt(cursor.getColumnIndex(ArtistTable.ALBUMS)));
         artist.setTracks(cursor.getInt(cursor.getColumnIndex(ArtistTable.TRACKS)));
         artist.setId(cursor.getInt(cursor.getColumnIndex(ArtistTable.ID)));
-        artist.setGenresString(cursor.getString(cursor.getColumnIndex(ArtistTable.TRACKS)));
+        artist.setGenresString(cursor.getString(cursor.getColumnIndex(ArtistTable.GENRES)));
         Cover cover = new Cover();
         cover.setBig(cursor.getString(cursor.getColumnIndex(CoverTable.BIG)));
         cover.setSmall(cursor.getString(cursor.getColumnIndex(CoverTable.SMALL)));
         artist.setCover(cover);
         return artist;
+    }
+
+    @VisibleForTesting
+    public int getCountAndClose(SQLiteDatabase db, String tableName) {
+        Cursor cursor = db.rawQuery("SELECT count(*) as size FROM " + tableName, null);
+        cursor.moveToFirst();
+        int size = cursor.getInt(cursor.getColumnIndex("size"));
+        cursor.close();
+        return size;
     }
 }

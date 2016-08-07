@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -88,7 +87,7 @@ public class Artist {
 
 
     public void setGenresString( String separatedString ) {
-        this.genres = Arrays.asList(separatedString.split(","));
+        this.genres = Arrays.asList(separatedString.split(", "));
     }
 
     /*
@@ -171,6 +170,43 @@ public class Artist {
         this.description = description;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Artist)) return false;
+
+        Artist artist = (Artist) o;
+
+        if (!getId().equals(artist.getId())) return false;
+        if (getName() != null ? !getName().equals(artist.getName()) : artist.getName() != null)
+            return false;
+        if (getGenres() != null ? !getGenres().equals(artist.getGenres()) : artist.getGenres() != null)
+            return false;
+        if (getTracks() != null ? !getTracks().equals(artist.getTracks()) : artist.getTracks() != null)
+            return false;
+        if (getAlbums() != null ? !getAlbums().equals(artist.getAlbums()) : artist.getAlbums() != null)
+            return false;
+        if (getLink() != null ? !getLink().equals(artist.getLink()) : artist.getLink() != null)
+            return false;
+        if (getDescription() != null ? !getDescription().equals(artist.getDescription()) : artist.getDescription() != null)
+            return false;
+        return getCover() != null ? getCover().equals(artist.getCover()) : artist.getCover() == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId().hashCode();
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getGenres() != null ? getGenres().hashCode() : 0);
+        result = 31 * result + (getTracks() != null ? getTracks().hashCode() : 0);
+        result = 31 * result + (getAlbums() != null ? getAlbums().hashCode() : 0);
+        result = 31 * result + (getLink() != null ? getLink().hashCode() : 0);
+        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
+        result = 31 * result + (getCover() != null ? getCover().hashCode() : 0);
+        return result;
+    }
+
     /**
      * @return The cover
      */
@@ -186,6 +222,5 @@ public class Artist {
     public void setCover( Cover cover ) {
         this.cover = cover;
     }
-
 
 }
