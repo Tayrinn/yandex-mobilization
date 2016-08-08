@@ -127,7 +127,7 @@ public class DbBackendTest implements DBContract {
 
         Artist artistFromCursor = dbBackend.getArtistFromCursor(cursor);
 
-        Assert.assertEquals(artist, artistFromCursor);  
+        Assert.assertEquals(artist, artistFromCursor);
 
         cursor.close();
         db.close();
