@@ -14,9 +14,18 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ActivityDetailsBinding;
 import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
+import com.volha.yandex.school.musicartists.db.DBContentProvider;
 import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
 import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
+
+
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by Volha on 17.04.2016.
@@ -24,43 +33,66 @@ import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
 public class DetailActivity extends AppCompatActivity {
 
     public final static String TAG_ARTIST_ID = "tag_artist_id";
+    private CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
 
-        ActivityDetailsBinding binding = ActivityDetailsBinding.inflate( getLayoutInflater() );
-        ArtistDetailViewModel model = new ArtistDetailViewModel();
+        final ActivityDetailsBinding binding = ActivityDetailsBinding.inflate( getLayoutInflater() );
+        final ArtistDetailViewModel model = new ArtistDetailViewModel();
         binding.setArtist( model );
-
-        // get artistId from intent
-        int artistId = getIntent().getIntExtra( TAG_ARTIST_ID, 0 );
-
-//        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
-//        Realm realm = Realm.getInstance( realmConfig );
-        SQLiteDatabase db = new ArtistsOpenHelper(this).getReadableDatabase();
-        DbBackend dbBackend = new DbBackend();
-        Cursor artistCursor = dbBackend.getArtist(db, artistId);
-        artistCursor.moveToFirst();
-        Artist artist = dbBackend.getArtistFromCursor(artistCursor);
-//        realm.close();
-
-        model.setArtist( artist );
-        model.setListener( onBrowserClickListener );
 
         setContentView( binding.getRoot() );
 
-        Toolbar toolbar = ( Toolbar ) findViewById( R.id.details_toolbar );
-        toolbar.setTitle( artist.getName() );
-        setSupportActionBar( toolbar );
-        getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        final Toolbar toolbar = ( Toolbar ) findViewById( R.id.details_toolbar );
 
-        ImageLoader imageLoader = ImageLoader.getInstance();
-        imageLoader.displayImage(
-                artist.getCover().getBig(),
-                binding.background,
-                new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
-        );
+        // get artistId from intent
+        final int artistId = getIntent().getIntExtra( TAG_ARTIST_ID, 0 );
+
+        final DbBackend dbBackend = new DbBackend();
+        compositeSubscription.add(Observable.create(new Observable.OnSubscribe<Cursor>() {
+            @Override
+            public void call(Subscriber<? super Cursor> subscriber) {
+                Cursor artistCursor = getContentResolver().query(
+                        Uri.parse("content://"
+                                + DBContentProvider.AUTHORITY
+                                + "/artist/"
+                                + artistId),
+                        null, null, null, null
+                );
+                subscriber.onNext(artistCursor);
+                subscriber.onCompleted();
+            }
+        })
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribeOn(Schedulers.computation())
+        .subscribe(new Subscriber<Cursor>() {
+            @Override
+            public void onCompleted() {}
+
+            @Override
+            public void onError(Throwable e) {}
+
+            @Override
+            public void onNext(Cursor cursor) {
+                cursor.moveToFirst();
+                Artist artist = dbBackend.getArtistFromCursor(cursor);
+
+                model.setArtist( artist );
+                model.setListener( onBrowserClickListener );
+                toolbar.setTitle( artist.getName() );
+                setSupportActionBar( toolbar );
+                getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+
+                ImageLoader imageLoader = ImageLoader.getInstance();
+                imageLoader.displayImage(
+                        artist.getCover().getBig(),
+                        binding.background,
+                        new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
+                );
+            }
+        }));
     }
 
     @Override

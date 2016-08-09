@@ -87,7 +87,7 @@ public class Artist {
 
 
     public void setGenresString( String separatedString ) {
-        this.genres = Arrays.asList(separatedString.split(", "));
+        this.genres = Arrays.asList(separatedString.split(","));
     }
 
     /*

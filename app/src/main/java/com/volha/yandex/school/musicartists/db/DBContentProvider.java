@@ -16,7 +16,7 @@ import android.text.TextUtils;
 
 public class DBContentProvider extends ContentProvider implements DBContract{
 
-    static final String AUTHORITY = "com.volha.yandex.school.musicartists.db.Artist";
+    public static final String AUTHORITY = "com.volha.yandex.school.musicartists.db.Artist";
 
     static final String ARTIST_PATH = "artist";
 
@@ -52,23 +52,19 @@ public class DBContentProvider extends ContentProvider implements DBContract{
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        db = dbHelper.getWritableDatabase();
+        Cursor cursor = null;
         switch (uriMatcher.match(uri)) {
             case URI_ARTISTS:
+                cursor = dbBackend.getArtistsAndCovers(db);
                 break;
             case URI_ARTISTS_ID:
                 String id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    selection = ArtistTable.ID + " = " + id;
-                } else {
-                    selection = selection + " AND " + ArtistTable.ID + " = " + id;
-                }
+                cursor = dbBackend.getArtist(db, id);
                 break;
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        db = dbHelper.getWritableDatabase();
-        Cursor cursor = db.query(ARTIST, projection, selection,
-                selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), ARTIST_CONTENT_URI);
         return cursor;
     }

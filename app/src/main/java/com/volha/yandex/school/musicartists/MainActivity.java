@@ -11,7 +11,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,6 +19,7 @@ import android.widget.ProgressBar;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
+import com.volha.yandex.school.musicartists.db.DBContentProvider;
 import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.mainlist.ArtistsRecyclerAdapter;
 import com.volha.yandex.school.musicartists.retrofit.ApiServices;
@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import de.psdev.licensesdialog.LicensesDialog;
+import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -41,8 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private ArtistsRecyclerAdapter adapter;
-//    private Realm realm;
     private CompositeSubscription compositeSubscription = new CompositeSubscription();
+    private ArtistsOpenHelper openHelper;
     private SQLiteDatabase db;
     private DbBackend dbBackend = new DbBackend();
 
@@ -56,26 +57,49 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
 
-        db = new ArtistsOpenHelper(this).getWritableDatabase();
+        if (savedInstanceState == null)
+            openHelper = new ArtistsOpenHelper(this);
+
+        db = openHelper.getWritableDatabase();
         db.enableWriteAheadLogging();
 
-//        RealmConfiguration realmConfig = new RealmConfiguration.Builder( this ).build();
-//        realm = Realm.getInstance( realmConfig );
-//        RealmResults<Artist> artists = realm.where( Artist.class ).findAll();
+        final ImageLoader imageLoader = ImageLoader.getInstance();
+        compositeSubscription.add(
+                Observable.create(new Observable.OnSubscribe<Cursor>() {
 
-        ImageLoader imageLoader = ImageLoader.getInstance();
-        Cursor cursorArtists = dbBackend.getArtistsAndCovers(db);
-        adapter = new ArtistsRecyclerAdapter( getArrayListFromCursor(cursorArtists), imageLoader, this );
+                    @Override
+                    public void call(Subscriber<? super Cursor> subscriber) {
+                        Cursor cursor = getContentResolver().query(
+                                DBContentProvider.ARTIST_CONTENT_URI, null, null, null, null);
+                        subscriber.onNext(cursor);
+                        subscriber.onCompleted();
+                    }
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.computation())
+                .subscribe(new Subscriber<Cursor>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {}
+
+                    @Override
+                    public void onNext(Cursor cursor) {
+                        adapter = new ArtistsRecyclerAdapter(
+                                getArrayListFromCursor(cursor), imageLoader, MainActivity.this );
+                        recyclerView.setAdapter( adapter );
+                        if ( cursor.getCount() == 0 ) { // if there is no data in db, show progress
+                            recyclerView.setVisibility( View.GONE );
+                            progressBar.setVisibility( View.VISIBLE );
+                        }
+                        cursor.close();
+                    }
+        }));
 
         recyclerView = ( RecyclerView ) findViewById( R.id.recyclerView );
         recyclerView.setLayoutManager( new LinearLayoutManager( this ) );
         recyclerView.setItemAnimator( new DefaultItemAnimator() );
-        recyclerView.setAdapter( adapter );
-
-        if ( cursorArtists.getCount() == 0 ) { // if there is no data in db, show progress
-            recyclerView.setVisibility( View.GONE );
-            progressBar.setVisibility( View.VISIBLE );
-        }
 
         swipeRefreshLayout = ( SwipeRefreshLayout ) findViewById( R.id.swipeRefresh );
         swipeRefreshLayout.setColorSchemeColors( getIntColor( R.color.colorAccent ), getIntColor( R.color.colorPrimary ) );
@@ -85,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
                 downloadArtists();
             }
         } );
-        cursorArtists.close();
         downloadArtists();
     }
 
@@ -113,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onError( Throwable e ) {
                         stopProgress();
+                        e.printStackTrace();
                         Snackbar.make( recyclerView, R.string.no_data, Snackbar.LENGTH_INDEFINITE )
                                 .setAction( R.string.reload, onReloadActionClick )
                                 .setActionTextColor( ContextCompat.getColor( MainActivity.this, R.color.colorAccent ) )
@@ -121,19 +145,16 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext( List<Artist> artists ) {
-                        db.beginTransaction();
-                        dbBackend.clearAll(db);
-                        for (Artist artist : artists) {
-                            Log.d("insert", "id=" + dbBackend.insertArtist(db, artist));
+                        try {
+                            db.beginTransaction();
+                            dbBackend.clearAll(db);
+                            for (Artist artist : artists) {
+                                dbBackend.insertArtist(db, artist);
+                            }
+                            db.setTransactionSuccessful();
+                        } finally {
+                            db.endTransaction();
                         }
-                        db.setTransactionSuccessful();
-                        db.endTransaction();
-//                        realm.beginTransaction();
-//                        realm.clear( Artist.class ); // delete all manually
-//                        realm.clear( Cover.class ); // because realm don't have
-//                        realm.clear( RealmString.class ); // cascade delete
-//                        realm.copyToRealm( artists );
-//                        realm.commitTransaction();
                         adapter.updateData( ( ArrayList<Artist> ) artists );
                     }
                 } )
@@ -165,9 +186,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-//        realm.close();
         compositeSubscription.unsubscribe();
-        db.close();
     }
 
     @Override

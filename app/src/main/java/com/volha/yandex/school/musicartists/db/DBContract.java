@@ -25,4 +25,16 @@ public interface DBContract {
         String SMALL = "small";
         String BIG = "big";
     }
+
+    String GENRES = "genre";
+    interface GenresTable {
+        String ID = "genre_id";
+        String NAME = "genre_name";
+    }
+
+    String ARTISTS_GENRES = "artists_genre";
+    interface ArtistsGenresTable {
+        String ARTIST_ID = "artist_id";
+        String GENRE_ID = "genre_id";
+    }
 }

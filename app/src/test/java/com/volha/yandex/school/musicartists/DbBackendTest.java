@@ -34,7 +34,8 @@ public class DbBackendTest implements DBContract {
 
         Assert.assertEquals(1, dbBackend.getCountAndClose(db, ARTIST));
         Assert.assertEquals(1, dbBackend.getCountAndClose(db, COVER));
-        db.close();
+        Assert.assertEquals(2, dbBackend.getCountAndClose(db, GENRES));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
     }
 
     @Test
@@ -49,13 +50,16 @@ public class DbBackendTest implements DBContract {
 
         Assert.assertEquals(1, dbBackend.getCountAndClose(db, ARTIST));
         Assert.assertEquals(1, dbBackend.getCountAndClose(db, COVER));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(db, GENRES));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
 
         dbBackend.clearAll(db);
 
         Assert.assertEquals(0, dbBackend.getCountAndClose(db, ARTIST));
         Assert.assertEquals(0, dbBackend.getCountAndClose(db, COVER));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(db, GENRES));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
 
-        db.close();
     }
 
     @Test
@@ -70,7 +74,6 @@ public class DbBackendTest implements DBContract {
         Assert.assertEquals(0, artistAndCoverCursor.getCount());
 
         artistAndCoverCursor.close();
-        db.close();
     }
 
     @Test
@@ -90,7 +93,6 @@ public class DbBackendTest implements DBContract {
         Assert.assertEquals("small_image", cursor.getString(cursor.getColumnIndex(CoverTable.SMALL)));
 
         cursor.close();
-        db.close();
     }
 
     @Test
@@ -102,7 +104,7 @@ public class DbBackendTest implements DBContract {
         Artist artist = createArtist();
         dbBackend.insertArtist(db, artist);
 
-        Cursor cursor = dbBackend.getArtist(db, 1);
+        Cursor cursor = dbBackend.getArtist(db, "1");
         cursor.moveToFirst();
 
         Assert.assertEquals(1, cursor.getInt(cursor.getColumnIndex(ArtistTable.ID)));
@@ -110,7 +112,6 @@ public class DbBackendTest implements DBContract {
         Assert.assertEquals("small_image", cursor.getString(cursor.getColumnIndex(CoverTable.SMALL)));
 
         cursor.close();
-        db.close();
     }
 
     @Test
@@ -122,7 +123,7 @@ public class DbBackendTest implements DBContract {
         Artist artist = createArtist();
         dbBackend.insertArtist(db, artist);
 
-        Cursor cursor = dbBackend.getArtist(db, 1);
+        Cursor cursor = dbBackend.getArtist(db, "1");
         cursor.moveToFirst();
 
         Artist artistFromCursor = dbBackend.getArtistFromCursor(cursor);
@@ -130,7 +131,6 @@ public class DbBackendTest implements DBContract {
         Assert.assertEquals(artist, artistFromCursor);
 
         cursor.close();
-        db.close();
     }
 
     private Artist createArtist() {
