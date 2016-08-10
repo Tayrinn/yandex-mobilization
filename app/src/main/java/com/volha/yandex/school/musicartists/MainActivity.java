@@ -33,6 +33,7 @@ import de.psdev.licensesdialog.LicensesDialog;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
@@ -113,8 +114,20 @@ public class MainActivity extends AppCompatActivity {
         compositeSubscription.add(
             apiServices
                 .getArtists()
+                .map(new Func1<List<Artist>, List<Artist>>() {
+                    @Override
+                    public List<Artist> call(List<Artist> artists) {
+                        getContentResolver().delete(DBContentProvider.ARTIST_CONTENT_URI, null, null);
+                        for (Artist artist : artists) {
+                            getContentResolver().insert(
+                                    DBContentProvider.ARTIST_CONTENT_URI,
+                                    DBUtils.getValuesFromArtist(artist));
+                        }
+                        return artists;
+                    }
+                })
+                .subscribeOn( Schedulers.computation() )
                 .observeOn( AndroidSchedulers.mainThread() )
-                .subscribeOn( Schedulers.newThread() )
                 .subscribe( new Subscriber<List<Artist>>() {
                     @Override
                     public void onCompleted() {
@@ -133,12 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext( List<Artist> artists ) {
-                        getContentResolver().delete(DBContentProvider.ARTIST_CONTENT_URI, null, null);
-                        for (Artist artist : artists) {
-                            getContentResolver().insert(
-                                    DBContentProvider.ARTIST_CONTENT_URI,
-                                    DBUtils.getValuesFromArtist(artist));
-                        }
                         adapter.updateData( artists );
                     }
                 } )
