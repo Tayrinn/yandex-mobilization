@@ -31,7 +31,6 @@ public class ApiServices {
     }
 
     public ApiServices() {
-
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(API_URL)
                 .addConverterFactory(JacksonConverterFactory.create())
@@ -42,13 +41,11 @@ public class ApiServices {
     }
 
     public interface ApiWebService {
-
         @GET("mobilization-2016/artists.json")
         Observable<List<Artist>> getArtists();
     }
 
     public rx.Observable<List<Artist>> getArtists() {
-
         return webService.getArtists();
     }
 }

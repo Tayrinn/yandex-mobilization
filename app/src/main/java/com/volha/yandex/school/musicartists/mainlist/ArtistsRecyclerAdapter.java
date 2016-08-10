@@ -19,19 +19,20 @@ import com.volha.yandex.school.musicartists.databinding.ListItemArtistBinding;
 import com.volha.yandex.school.musicartists.ui.MainFragment;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Volha on 17.04.2016.
  */
 public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolder> {
 
-    private ArrayList<Artist> artists;
+    private List<Artist> artists;
     private ImageLoader imageLoader;
     private DisplayImageOptions imageOptions;
     private ImageLoadingListener loadingListener;
     private MainFragment fragment;
 
-    public ArtistsRecyclerAdapter(ArrayList<Artist> artists, ImageLoader imageLoader, MainFragment fragment) {
+    public ArtistsRecyclerAdapter(List<Artist> artists, ImageLoader imageLoader, MainFragment fragment) {
         this.artists = artists;
         this.imageLoader = imageLoader;
         this.fragment = fragment;
@@ -110,7 +111,7 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         return artists.get(position).getId();
     }
 
-    public void updateData(ArrayList<Artist> artists) {
+    public void updateData(List<Artist> artists) {
         this.artists.clear();
         this.artists.addAll(artists);
         notifyDataSetChanged();

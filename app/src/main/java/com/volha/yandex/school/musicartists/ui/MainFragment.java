@@ -137,8 +137,7 @@ public class MainFragment extends Fragment {
                                 realm.clear(RealmString.class); // cascade delete
                                 realm.copyToRealm(artists);
                                 realm.commitTransaction();
-                                Log.d("update", "data");
-                                adapter.updateData((ArrayList<Artist>) artists);
+                                adapter.updateData(artists);
                             }
                         })
         );
@@ -182,8 +181,8 @@ public class MainFragment extends Fragment {
         recyclerView.setVisibility(View.VISIBLE);
     }
 
-    private ArrayList<Artist> getArrayListFromRealmResult(RealmResults<Artist> artists) {
-        ArrayList<Artist> result = new ArrayList<>(artists.size());
+    private List<Artist> getArrayListFromRealmResult(RealmResults<Artist> artists) {
+        List<Artist> result = new ArrayList<>(artists.size());
         for (Artist artist : artists) {
             result.add(artist);
         }
