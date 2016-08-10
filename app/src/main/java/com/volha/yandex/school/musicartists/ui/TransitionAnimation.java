@@ -23,7 +23,7 @@ public class TransitionAnimation extends TransitionSet {
      * This constructor allows us to use this transition in XML
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public TransitionAnimation( Context context, AttributeSet attrs) {
+    public TransitionAnimation(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
@@ -33,6 +33,6 @@ public class TransitionAnimation extends TransitionSet {
         setOrdering(ORDERING_TOGETHER);
         addTransition(new ChangeBounds()).
                 addTransition(new ChangeTransform());
-                //addTransition(new ChangeImageTransform());
+        //addTransition(new ChangeImageTransform());
     }
 }

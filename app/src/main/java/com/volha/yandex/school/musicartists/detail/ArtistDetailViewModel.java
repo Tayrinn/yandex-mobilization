@@ -12,9 +12,9 @@ import com.volha.yandex.school.musicartists.data.Artist;
  */
 public class ArtistDetailViewModel extends BaseObservable {
 
-    public ObservableField<String> name        = new ObservableField<>();
-    public ObservableField<String> genres      = new ObservableField<>();
-    public ObservableField<String> link        = new ObservableField<>();
+    public ObservableField<String> name = new ObservableField<>();
+    public ObservableField<String> genres = new ObservableField<>();
+    public ObservableField<String> link = new ObservableField<>();
     public ObservableField<String> description = new ObservableField<>();
 
     public ObservableInt albums = new ObservableInt();
@@ -22,21 +22,21 @@ public class ArtistDetailViewModel extends BaseObservable {
 
     private OnBrowserClickListener listener;
 
-    public void setArtist( Artist artist ) {
+    public void setArtist(Artist artist) {
 
-        name.set( artist.getName() );
-        genres.set( artist.getGenresString() );
-        link.set( artist.getLink() );
-        description.set( artist.getDescription() );
-        albums.set( artist.getAlbums() );
-        tracks.set( artist.getTracks() );
+        name.set(artist.getName());
+        genres.set(artist.getGenresString());
+        link.set(artist.getLink());
+        description.set(artist.getDescription());
+        albums.set(artist.getAlbums());
+        tracks.set(artist.getTracks());
     }
 
-    public void onBrowseClick( View view ) {
-        listener.onBrowseClick( link.get() );
+    public void onBrowseClick(View view) {
+        listener.onBrowseClick(link.get());
     }
 
-    public void setListener( OnBrowserClickListener listener ) {
+    public void setListener(OnBrowserClickListener listener) {
         this.listener = listener;
     }
 }

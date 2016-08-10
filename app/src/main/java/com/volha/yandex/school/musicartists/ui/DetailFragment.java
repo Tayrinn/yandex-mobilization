@@ -33,45 +33,45 @@ public class DetailFragment extends Fragment {
 
     int artistId;
 
-    public static DetailFragment newInstance( int artistId ) {
+    public static DetailFragment newInstance(int artistId) {
         DetailFragment fragment = new DetailFragment();
         Bundle argument = new Bundle();
-        argument.putInt( TAG_ARTIST_ID, artistId );
-        fragment.setArguments( argument );
+        argument.putInt(TAG_ARTIST_ID, artistId);
+        fragment.setArguments(argument);
         return fragment;
     }
 
     @Nullable
     @Override
-    public View onCreateView( LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState ) {
-        FragmentDetailsBinding binding = FragmentDetailsBinding.inflate( inflater );
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        FragmentDetailsBinding binding = FragmentDetailsBinding.inflate(inflater);
         ArtistDetailViewModel model = new ArtistDetailViewModel();
-        binding.setArtist( model );
+        binding.setArtist(model);
 
-        artistId = getArguments().getInt( TAG_ARTIST_ID );
+        artistId = getArguments().getInt(TAG_ARTIST_ID);
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder( getContext() ).build();
-        Realm realm = Realm.getInstance( realmConfig );
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
+        Realm realm = Realm.getInstance(realmConfig);
 
-        Artist artist = realm.where( Artist.class ).equalTo( "id", artistId ).findFirst();
+        Artist artist = realm.where(Artist.class).equalTo("id", artistId).findFirst();
         realm.close();
 
-        model.setArtist( artist );
-        model.setListener( onBrowserClickListener );
+        model.setArtist(artist);
+        model.setListener(onBrowserClickListener);
 
         Toolbar toolbar = binding.detailsToolbar;
-        toolbar.setTitle( artist.getName() );
-        ((MainActivity ) getActivity()).setSupportActionBar( toolbar );
-        ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled( true );
+        toolbar.setTitle(artist.getName());
+        ((MainActivity) getActivity()).setSupportActionBar(toolbar);
+        ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ImageLoader imageLoader = ImageLoader.getInstance();
         imageLoader.displayImage(
                 artist.getCover().getBig(),
                 binding.background,
-                new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
+                new DisplayImageOptions.Builder().cacheOnDisk(true).build()
         );
 
-        setRetainInstance( true );
+        setRetainInstance(true);
         return binding.getRoot();
     }
 
@@ -79,15 +79,15 @@ public class DetailFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ImageView image = (ImageView) view.findViewById(R.id.background);
-        ViewCompat.setTransitionName(image, artistId + getString( R.string.album_cover_transition_name ));
+        ViewCompat.setTransitionName(image, artistId + getString(R.string.album_cover_transition_name));
     }
 
     OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
         @Override
-        public void onBrowseClick( String link ) {
-            Intent intent = new Intent( Intent.ACTION_VIEW );
-            intent.setData( Uri.parse(link) );
-            startActivity( intent );
+        public void onBrowseClick(String link) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(link));
+            startActivity(intent);
         }
     };
 

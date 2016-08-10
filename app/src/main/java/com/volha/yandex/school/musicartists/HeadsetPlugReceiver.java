@@ -15,42 +15,40 @@ import android.widget.ImageButton;
 public class HeadsetPlugReceiver extends BroadcastReceiver {
 
     @Override
-    public void onReceive( Context context, Intent intent ) {
-
-        if (intent.getAction().equals( Intent.ACTION_HEADSET_PLUG )) {
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
             int state = intent.getIntExtra("state", -1);
-            switch ( state ) {
+            switch (state) {
                 case 1:
-                    showYaShareDialog( context );
+                    showYaShareDialog(context);
                     break;
             }
         }
     }
 
+    private void showYaShareDialog(final Context context) {
+        View content = ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.dialog_ya_share, null);
 
-    private void showYaShareDialog( final Context context ) {
-
-        View content = ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate( R.layout.dialog_ya_share, null );
-
-        ImageButton yaMusic = ( ImageButton ) content.findViewById( R.id.yamusic );
-        yaMusic.setOnClickListener( new View.OnClickListener() {
+        ImageButton yaMusic = (ImageButton) content.findViewById(R.id.yamusic);
+        yaMusic.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick( View v ) {
+            public void onClick(View v) {
                 context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=ru.yandex.music")));
 
             }
-        } );
+        });
 
-        ImageButton yaRadio = ( ImageButton ) content.findViewById( R.id.yaradio );
-        yaRadio.setOnClickListener( new View.OnClickListener() {
+        ImageButton yaRadio = (ImageButton) content.findViewById(R.id.yaradio);
+        yaRadio.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick( View v ) {
+            public void onClick(View v) {
                 context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=ru.yandex.radio")));
             }
-        } );
+        });
 
-        AlertDialog.Builder adb = new AlertDialog.Builder( context );
-        adb.setView( content );
-        adb.setCancelable( true );
+        AlertDialog.Builder adb = new AlertDialog.Builder(context);
+        adb.setView(content);
+        adb.setCancelable(true);
         adb.show();
-    }}
+    }
+}

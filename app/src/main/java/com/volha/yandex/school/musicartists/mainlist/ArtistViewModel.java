@@ -10,7 +10,7 @@ import android.view.View;
  */
 public class ArtistViewModel extends BaseObservable {
 
-    public ObservableField<String> name   = new ObservableField<>();
+    public ObservableField<String> name = new ObservableField<>();
     public ObservableField<String> genres = new ObservableField<>();
 
     public ObservableInt albums = new ObservableInt();
@@ -22,7 +22,7 @@ public class ArtistViewModel extends BaseObservable {
         listener.onItemClick();
     }
 
-    public void setListener( OnArtistListItemClickListener listener ) {
+    public void setListener(OnArtistListItemClickListener listener) {
         this.listener = listener;
     }
 }

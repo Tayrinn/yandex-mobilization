@@ -12,10 +12,9 @@ public class ArtistViewHolder extends RecyclerView.ViewHolder {
     public ListItemArtistBinding binding;
     public ArtistViewModel viewModel = new ArtistViewModel();
 
-    public ArtistViewHolder( ListItemArtistBinding binding ) {
-        super( binding.getRoot() );
+    public ArtistViewHolder(ListItemArtistBinding binding) {
+        super(binding.getRoot());
         this.binding = binding;
-        this.binding.setArtist( viewModel );
+        this.binding.setArtist(viewModel);
     }
-
 }

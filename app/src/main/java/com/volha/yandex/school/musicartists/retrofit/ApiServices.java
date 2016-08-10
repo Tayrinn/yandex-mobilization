@@ -33,12 +33,12 @@ public class ApiServices {
     public ApiServices() {
 
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl( API_URL )
-                .addConverterFactory( JacksonConverterFactory.create() )
-                .addCallAdapterFactory( RxJavaCallAdapterFactory.create() )
+                .baseUrl(API_URL)
+                .addConverterFactory(JacksonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
 
-        webService = retrofit.create( ApiWebService.class );
+        webService = retrofit.create(ApiWebService.class);
     }
 
     public interface ApiWebService {
@@ -51,6 +51,4 @@ public class ApiServices {
 
         return webService.getArtists();
     }
-
-
 }
