@@ -36,19 +36,19 @@ public class DetailActivity extends AppCompatActivity {
     private CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate( savedInstanceState );
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        final ActivityDetailsBinding binding = ActivityDetailsBinding.inflate( getLayoutInflater() );
+        final ActivityDetailsBinding binding = ActivityDetailsBinding.inflate(getLayoutInflater());
         final ArtistDetailViewModel model = new ArtistDetailViewModel();
-        binding.setArtist( model );
+        binding.setArtist(model);
 
-        setContentView( binding.getRoot() );
+        setContentView(binding.getRoot());
 
-        final Toolbar toolbar = ( Toolbar ) findViewById( R.id.details_toolbar );
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.details_toolbar);
 
         // get artistId from intent
-        final int artistId = getIntent().getIntExtra( TAG_ARTIST_ID, 0 );
+        final int artistId = getIntent().getIntExtra(TAG_ARTIST_ID, 0);
 
         final DbBackend dbBackend = new DbBackend();
         compositeSubscription.add(Observable.create(new Observable.OnSubscribe<Cursor>() {
@@ -65,51 +65,51 @@ public class DetailActivity extends AppCompatActivity {
                 subscriber.onCompleted();
             }
         })
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribeOn(Schedulers.computation())
-        .subscribe(new Subscriber<Cursor>() {
-            @Override
-            public void onCompleted() {}
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.computation())
+                .subscribe(new Subscriber<Cursor>() {
+                    @Override
+                    public void onCompleted() {
+                    }
 
-            @Override
-            public void onError(Throwable e) {}
+                    @Override
+                    public void onError(Throwable e) {
+                    }
 
-            @Override
-            public void onNext(Cursor cursor) {
-                cursor.moveToFirst();
-                Artist artist = dbBackend.getArtistFromCursor(cursor);
+                    @Override
+                    public void onNext(Cursor cursor) {
+                        cursor.moveToFirst();
+                        Artist artist = dbBackend.getArtistFromCursor(cursor);
+                        model.setArtist(artist);
+                        model.setListener(onBrowserClickListener);
+                        toolbar.setTitle(artist.getName());
+                        setSupportActionBar(toolbar);
+                        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-                model.setArtist( artist );
-                model.setListener( onBrowserClickListener );
-                toolbar.setTitle( artist.getName() );
-                setSupportActionBar( toolbar );
-                getSupportActionBar().setDisplayHomeAsUpEnabled( true );
-
-                ImageLoader imageLoader = ImageLoader.getInstance();
-                imageLoader.displayImage(
-                        artist.getCover().getBig(),
-                        binding.background,
-                        new DisplayImageOptions.Builder().cacheOnDisk( true ).build()
-                );
-            }
-        }));
+                        ImageLoader imageLoader = ImageLoader.getInstance();
+                        imageLoader.displayImage(
+                                artist.getCover().getBig(),
+                                binding.background,
+                                new DisplayImageOptions.Builder().cacheOnDisk(true).build()
+                        );
+                    }
+                }));
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) {
-
-        if ( item.getItemId() == android.R.id.home) {
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
             onBackPressed();
         }
-        return super.onOptionsItemSelected( item );
+        return super.onOptionsItemSelected(item);
     }
 
     OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
         @Override
-        public void onBrowseClick( String link ) {
-            Intent intent = new Intent( Intent.ACTION_VIEW );
-            intent.setData( Uri.parse(link) );
-            startActivity( intent );
+        public void onBrowseClick(String link) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(link));
+            startActivity(intent);
         }
     };
 
