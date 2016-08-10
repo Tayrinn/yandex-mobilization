@@ -114,25 +114,6 @@ public class DbBackendTest implements DBContract {
         cursor.close();
     }
 
-    @Test
-    public void getArtistFromCursor() {
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
-        Artist artist = createArtist();
-        dbBackend.insertArtist(db, artist);
-
-        Cursor cursor = dbBackend.getArtist(db, "1");
-        cursor.moveToFirst();
-
-        Artist artistFromCursor = dbBackend.getArtistFromCursor(cursor);
-
-        Assert.assertEquals(artist, artistFromCursor);
-
-        cursor.close();
-    }
-
     private Artist createArtist() {
         Artist artist = new Artist();
         artist.setId(1);

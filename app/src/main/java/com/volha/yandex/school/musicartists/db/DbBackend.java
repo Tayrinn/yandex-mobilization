@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.data.Cover;
@@ -27,23 +28,35 @@ public class DbBackend implements DBContract {
             + " ON ag." + ArtistsGenresTable.GENRE_ID + " = g." + GenresTable.ID;
 
     public long insertArtist(SQLiteDatabase db, Artist artist) {
-        ContentValues values = new ContentValues();
-        values.put(ArtistTable.ID, artist.getId());
-        values.put(ArtistTable.COVER_ID, insertCover(db, artist.getCover()));
-        values.put(ArtistTable.NAME, artist.getName());
-        values.put(ArtistTable.ALBUMS, artist.getAlbums());
-        values.put(ArtistTable.TRACKS, artist.getTracks());
-        values.put(ArtistTable.DESCRIPTION, artist.getDescription());
-        values.put(ArtistTable.LINK, artist.getLink());
-        for (String genre : artist.getGenres()) {
-            long genreId = insertGenre(db, genre);
-            insertArtistGenre(db, artist.getId(), genreId);
+        db.beginTransaction();
+        long id = -1;
+        try {
+            ContentValues values = new ContentValues();
+            values.put(ArtistTable.ID, artist.getId());
+            values.put(ArtistTable.COVER_ID, insertCover(db, artist.getCover()));
+            values.put(ArtistTable.NAME, artist.getName());
+            values.put(ArtistTable.ALBUMS, artist.getAlbums());
+            values.put(ArtistTable.TRACKS, artist.getTracks());
+            values.put(ArtistTable.DESCRIPTION, artist.getDescription());
+            values.put(ArtistTable.LINK, artist.getLink());
+            if (artist.getGenres() != null) {
+                for (String genre : artist.getGenres()) {
+                    long genreId = insertGenre(db, genre);
+                    insertArtistGenre(db, artist.getId(), genreId);
+                }
+            }
+            id = db.insert(ARTIST, null, values);
+            Log.d("insert", "id=" + id);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
         }
-        return db.insert(ARTIST, null, values);
+        return id;
     }
 
     public long insertArtist(SQLiteDatabase db, ContentValues values) {
-        return db.insert(ARTIST, null, values);
+        Artist artist = DBUtils.getArtistFromValues(values);
+        return insertArtist(db, artist);
     }
 
     public int deleteArtist(SQLiteDatabase db, String selection, String[] selectionArgs) {
@@ -81,18 +94,19 @@ public class DbBackend implements DBContract {
     private long getGenreId(SQLiteDatabase db, String genre) {
         String query = "SELECT " + GenresTable.ID + " FROM " + GENRES
                 + " WHERE " + GenresTable.NAME + " like ?";
-        Cursor cursor = db.rawQuery(query, new String[] {genre});
+        Cursor cursor = db.rawQuery(query, new String[]{genre});
         cursor.moveToFirst();
         long id = cursor.getLong(0);
         cursor.close();
         return id;
     }
 
-    public void clearAll(SQLiteDatabase db) {
-        db.execSQL("DELETE FROM " + ARTIST);
-        db.execSQL("DELETE FROM " + COVER);
-        db.execSQL("DELETE FROM " + ARTISTS_GENRES);
-        db.execSQL("DELETE FROM " + GENRES);
+    public int clearAll(SQLiteDatabase db) {
+        int cnt = db.delete(ARTIST, null, null);
+        db.delete(COVER, null, null);
+        db.delete(ARTISTS_GENRES, null, null);
+        db.delete(GENRES, null, null);
+        return cnt;
     }
 
     public Cursor getArtistsAndCovers(SQLiteDatabase db) {
@@ -102,7 +116,7 @@ public class DbBackend implements DBContract {
 
     public Cursor getArtist(SQLiteDatabase db, String id) {
         String query = ARTIST_QUERY + " WHERE a." + ArtistTable.ID + " = ?";
-        return db.rawQuery(query, new String[] {id});
+        return db.rawQuery(query, new String[]{id});
     }
 
     @VisibleForTesting

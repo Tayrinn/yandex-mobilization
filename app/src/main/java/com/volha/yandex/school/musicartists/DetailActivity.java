@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -62,8 +63,12 @@ public class DetailActivity extends AppCompatActivity {
                                 + artistId),
                         null, null, null, null
                 );
-                subscriber.onNext(artistCursor);
-                subscriber.onCompleted();
+                if (artistCursor == null) {
+                    subscriber.onError(new NullPointerException());
+                } else {
+                    subscriber.onNext(artistCursor);
+                    subscriber.onCompleted();
+                }
             }
         })
                 .observeOn(AndroidSchedulers.mainThread())
@@ -75,6 +80,7 @@ public class DetailActivity extends AppCompatActivity {
 
                     @Override
                     public void onError(Throwable e) {
+                        Toast.makeText(DetailActivity.this, "Server not available, try again later", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -93,6 +99,7 @@ public class DetailActivity extends AppCompatActivity {
                                 binding.background,
                                 new DisplayImageOptions.Builder().cacheOnDisk(true).build()
                         );
+                        cursor.close();
                     }
                 }));
     }

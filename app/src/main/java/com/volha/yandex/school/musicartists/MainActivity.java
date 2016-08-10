@@ -44,25 +44,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ArtistsRecyclerAdapter adapter;
     private CompositeSubscription compositeSubscription = new CompositeSubscription();
-    private ArtistsOpenHelper openHelper;
-    private SQLiteDatabase db;
-    private DbBackend dbBackend;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.activity_main );
-        dbBackend = new DbBackend();
         progressBar = ( ProgressBar ) findViewById( R.id.list_progress );
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
-
-        if (savedInstanceState == null)
-            openHelper = new ArtistsOpenHelper(this);
-
-        db = openHelper.getWritableDatabase();
-        db.enableWriteAheadLogging();
 
         final ImageLoader imageLoader = ImageLoader.getInstance();
         compositeSubscription.add(
@@ -143,21 +133,16 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext( List<Artist> artists ) {
-                        try {
-                            db.beginTransaction();
-                            dbBackend.clearAll(db);
-                            for (Artist artist : artists) {
-                                dbBackend.insertArtist(db, artist);
-                            }
-                            db.setTransactionSuccessful();
-                        } finally {
-                            db.endTransaction();
+                        getContentResolver().delete(DBContentProvider.ARTIST_CONTENT_URI, null, null);
+                        for (Artist artist : artists) {
+                            getContentResolver().insert(
+                                    DBContentProvider.ARTIST_CONTENT_URI,
+                                    DBUtils.getValuesFromArtist(artist));
                         }
-                        adapter.updateData( ( ArrayList<Artist> ) artists );
+                        adapter.updateData( artists );
                     }
                 } )
         );
-
     }
 
     private View.OnClickListener onReloadActionClick = new View.OnClickListener() {
@@ -203,9 +188,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ArrayList<Artist> getArrayListFromCursor(Cursor cursor) {
+        if ( cursor == null || cursor.getCount() == 0 ) {
+            return new ArrayList<>();
+        }
         ArrayList<Artist> result = new ArrayList<>(cursor.getCount());
-        if ( cursor.getCount() == 0 )
-            return result;
         cursor.moveToFirst();
         do {
             result.add(DBUtils.getArtistFromCursor(cursor));
