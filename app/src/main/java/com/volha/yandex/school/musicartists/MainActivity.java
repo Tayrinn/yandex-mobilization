@@ -20,6 +20,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
 import com.volha.yandex.school.musicartists.db.DBContentProvider;
+import com.volha.yandex.school.musicartists.db.DBUtils;
 import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.mainlist.ArtistsRecyclerAdapter;
 import com.volha.yandex.school.musicartists.retrofit.ApiServices;
@@ -45,14 +46,14 @@ public class MainActivity extends AppCompatActivity {
     private CompositeSubscription compositeSubscription = new CompositeSubscription();
     private ArtistsOpenHelper openHelper;
     private SQLiteDatabase db;
-    private DbBackend dbBackend = new DbBackend();
+    private DbBackend dbBackend;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.activity_main );
-
+        dbBackend = new DbBackend();
         progressBar = ( ProgressBar ) findViewById( R.id.list_progress );
         Toolbar toolbar = ( Toolbar ) findViewById( R.id.toolbar );
         setSupportActionBar( toolbar );
@@ -122,14 +123,11 @@ public class MainActivity extends AppCompatActivity {
         compositeSubscription.add(
             apiServices
                 .getArtists()
-                .cache()
-                .timeout( 30, TimeUnit.SECONDS )
                 .observeOn( AndroidSchedulers.mainThread() )
                 .subscribeOn( Schedulers.newThread() )
                 .subscribe( new Subscriber<List<Artist>>() {
                     @Override
                     public void onCompleted() {
-
                         stopProgress();
                     }
 
@@ -210,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
             return result;
         cursor.moveToFirst();
         do {
-            result.add(dbBackend.getArtistFromCursor(cursor));
+            result.add(DBUtils.getArtistFromCursor(cursor));
         } while (cursor.moveToNext());
         return result;
     }

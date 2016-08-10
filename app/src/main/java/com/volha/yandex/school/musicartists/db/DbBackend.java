@@ -16,6 +16,16 @@ import com.volha.yandex.school.musicartists.data.Cover;
 
 public class DbBackend implements DBContract {
 
+    private static final String ARTIST_QUERY = "SELECT *, " +
+            "group_concat(" + GenresTable.NAME + ") as " + ArtistTable.GENRES
+            + " FROM " + ARTIST + " as a"
+            + " JOIN " + COVER + " as c"
+            + " ON a." + ArtistTable.COVER_ID + " = c." + CoverTable.ID
+            + " JOIN " + ARTISTS_GENRES + " as ag"
+            + " ON a." + ArtistTable.ID + " = ag." + ArtistsGenresTable.ARTIST_ID
+            + " JOIN " + GENRES + " as g"
+            + " ON ag." + ArtistsGenresTable.GENRE_ID + " = g." + GenresTable.ID;
+
     public long insertArtist(SQLiteDatabase db, Artist artist) {
         ContentValues values = new ContentValues();
         values.put(ArtistTable.ID, artist.getId());
@@ -30,6 +40,18 @@ public class DbBackend implements DBContract {
             insertArtistGenre(db, artist.getId(), genreId);
         }
         return db.insert(ARTIST, null, values);
+    }
+
+    public long insertArtist(SQLiteDatabase db, ContentValues values) {
+        return db.insert(ARTIST, null, values);
+    }
+
+    public int deleteArtist(SQLiteDatabase db, String selection, String[] selectionArgs) {
+        return db.delete(ARTIST, selection, selectionArgs);
+    }
+
+    public int updateArtist(SQLiteDatabase db, ContentValues values, String selection, String[] selectionArgs) {
+        return db.update(ARTIST, values, selection, selectionArgs);
     }
 
     private long insertCover(SQLiteDatabase db, Cover cover) {
@@ -74,49 +96,13 @@ public class DbBackend implements DBContract {
     }
 
     public Cursor getArtistsAndCovers(SQLiteDatabase db) {
-        String query = "SELECT *, " +
-                "group_concat(" + GenresTable.NAME + ") as " + ArtistTable.GENRES
-                + " FROM " + ARTIST + " as a"
-                + " JOIN " + COVER + " as c"
-                + " ON a." + ArtistTable.COVER_ID + " = c." + CoverTable.ID
-                + " JOIN " + ARTISTS_GENRES + " as ag"
-                + " ON a." + ArtistTable.ID + " = ag." + ArtistsGenresTable.ARTIST_ID
-                + " JOIN " + GENRES + " as g"
-                + " ON ag." + ArtistsGenresTable.GENRE_ID + " = g." + GenresTable.ID
-                + " GROUP BY a." + ArtistTable.ID;
+        String query = ARTIST_QUERY + " GROUP BY a." + ArtistTable.ID;
         return db.rawQuery(query, null);
     }
 
     public Cursor getArtist(SQLiteDatabase db, String id) {
-        String query = "SELECT *, " +
-                "group_concat(" + GenresTable.NAME + ") as " + ArtistTable.GENRES
-                + " FROM " + ARTIST + " as a"
-                + " LEFT OUTER JOIN " + COVER + " as c"
-                + " ON a." + ArtistTable.COVER_ID + " = c." + CoverTable.ID
-                + " LEFT OUTER JOIN " + ARTISTS_GENRES + " as ag"
-                + " ON a." + ArtistTable.ID + " = ag." + ArtistsGenresTable.ARTIST_ID
-                + " LEFT OUTER JOIN " + GENRES + " as g"
-                + " ON ag." + ArtistsGenresTable.GENRE_ID + " = g." + GenresTable.ID
-                + " WHERE a." + ArtistTable.ID + " = ?"
-                + " GROUP BY a." + ArtistTable.ID ;
-
+        String query = ARTIST_QUERY + " WHERE a." + ArtistTable.ID + " = ?";
         return db.rawQuery(query, new String[] {id});
-    }
-
-    public Artist getArtistFromCursor(Cursor cursor) {
-        Artist artist = new Artist();
-        artist.setName(cursor.getString(cursor.getColumnIndex(ArtistTable.NAME)));
-        artist.setDescription(cursor.getString(cursor.getColumnIndex(ArtistTable.DESCRIPTION)));
-        artist.setLink(cursor.getString(cursor.getColumnIndex(ArtistTable.LINK)));
-        artist.setAlbums(cursor.getInt(cursor.getColumnIndex(ArtistTable.ALBUMS)));
-        artist.setTracks(cursor.getInt(cursor.getColumnIndex(ArtistTable.TRACKS)));
-        artist.setId(cursor.getInt(cursor.getColumnIndex(ArtistTable.ID)));
-        artist.setGenresString(cursor.getString(cursor.getColumnIndex(ArtistTable.GENRES)));
-        Cover cover = new Cover();
-        cover.setBig(cursor.getString(cursor.getColumnIndex(CoverTable.BIG)));
-        cover.setSmall(cursor.getString(cursor.getColumnIndex(CoverTable.SMALL)));
-        artist.setCover(cover);
-        return artist;
     }
 
     @VisibleForTesting

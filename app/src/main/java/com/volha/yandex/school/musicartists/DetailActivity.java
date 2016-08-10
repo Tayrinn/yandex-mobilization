@@ -15,6 +15,7 @@ import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ActivityDetailsBinding;
 import com.volha.yandex.school.musicartists.db.ArtistsOpenHelper;
 import com.volha.yandex.school.musicartists.db.DBContentProvider;
+import com.volha.yandex.school.musicartists.db.DBUtils;
 import com.volha.yandex.school.musicartists.db.DbBackend;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
 import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
@@ -79,7 +80,7 @@ public class DetailActivity extends AppCompatActivity {
                     @Override
                     public void onNext(Cursor cursor) {
                         cursor.moveToFirst();
-                        Artist artist = dbBackend.getArtistFromCursor(cursor);
+                        Artist artist = DBUtils.getArtistFromCursor(cursor);
                         model.setArtist(artist);
                         model.setListener(onBrowserClickListener);
                         toolbar.setTitle(artist.getName());

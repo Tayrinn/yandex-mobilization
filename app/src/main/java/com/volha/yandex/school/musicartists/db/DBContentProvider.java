@@ -38,13 +38,13 @@ public class DBContentProvider extends ContentProvider implements DBContract{
     }
 
 
-    ArtistsOpenHelper dbHelper;
     SQLiteDatabase db;
     DbBackend dbBackend;
+    ArtistsOpenHelper helper;
 
     @Override
     public boolean onCreate() {
-        dbHelper = new ArtistsOpenHelper(getContext());
+        helper = new ArtistsOpenHelper(getContext());
         dbBackend = new DbBackend();
         return true;
     }
@@ -52,7 +52,7 @@ public class DBContentProvider extends ContentProvider implements DBContract{
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        db = dbHelper.getWritableDatabase();
+        db = helper.getWritableDatabase();
         Cursor cursor = null;
         switch (uriMatcher.match(uri)) {
             case URI_ARTISTS:
@@ -87,8 +87,8 @@ public class DBContentProvider extends ContentProvider implements DBContract{
         if (uriMatcher.match(uri) != URI_ARTISTS)
             throw new IllegalArgumentException("Wrong URI: " + uri);
 
-        db = dbHelper.getWritableDatabase();
-        long rowID = db.insert(ARTIST, null, values);
+        db = helper.getWritableDatabase();
+        long rowID = dbBackend.insertArtist(db, values);
         Uri resultUri = ContentUris.withAppendedId(ARTIST_CONTENT_URI, rowID);
         // уведомляем ContentResolver, что данные по адресу resultUri изменились
         getContext().getContentResolver().notifyChange(resultUri, null);
@@ -111,8 +111,8 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        db = dbHelper.getWritableDatabase();
-        int cnt = db.delete(ARTIST, selection, selectionArgs);
+        db = helper.getWritableDatabase();
+        int cnt = dbBackend.deleteArtist(db, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
         return cnt;
     }
@@ -133,8 +133,8 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        db = dbHelper.getWritableDatabase();
-        int cnt = db.update(ARTIST, values, selection, selectionArgs);
+        db = helper.getWritableDatabase();
+        int cnt = dbBackend.updateArtist(db, values, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
         return cnt;
     }
