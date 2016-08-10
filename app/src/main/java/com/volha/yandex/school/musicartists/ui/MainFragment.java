@@ -20,7 +20,9 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
+import com.volha.yandex.school.musicartists.Utils;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.data.Cover;
 import com.volha.yandex.school.musicartists.data.RealmString;
@@ -63,17 +65,15 @@ public class MainFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.fragment_main, null);
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
         progressBar = (ProgressBar) rootView.findViewById(R.id.list_progress);
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-        realm = Realm.getInstance(realmConfig);
+        realm = Realm.getInstance(MyApplication.from(getContext()).getRealmConfig());
         RealmResults<Artist> artists = realm.where(Artist.class).findAll();
 
-        ImageLoader imageLoader = ImageLoader.getInstance();
+        ImageLoader imageLoader = MyApplication.from(getContext()).getImageLoader();
 
         adapter = new ArtistsRecyclerAdapter(getArrayListFromRealmResult(artists), imageLoader, this);
 
@@ -109,14 +109,11 @@ public class MainFragment extends Fragment {
         compositeSubscription.add(
                 apiServices
                         .getArtists()
-                        .timeout(30, TimeUnit.SECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.newThread())
-
+                        .subscribeOn(Schedulers.io())
                         .subscribe(new Subscriber<List<Artist>>() {
                             @Override
                             public void onCompleted() {
-
                                 stopProgress();
                             }
 
@@ -150,18 +147,18 @@ public class MainFragment extends Fragment {
     }
 
     public void startDetailFragment(View transitionElement, int artistId) {
-
         DetailFragment details = DetailFragment.newInstance(artistId);
         details.setSharedElementReturnTransition(new TransitionAnimation());
         details.setSharedElementEnterTransition(new TransitionAnimation());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            setExitTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.fade));
-            details.setEnterTransition(TransitionInflater.from(getActivity()).inflateTransition(android.R.transition.slide_bottom));
+            TransitionInflater inflater = TransitionInflater.from(getContext());
+            setExitTransition(inflater.inflateTransition(android.R.transition.fade));
+            details.setEnterTransition(inflater.inflateTransition(android.R.transition.slide_bottom));
         }
 
         getFragmentManager()
                 .beginTransaction()
-                .addSharedElement(transitionElement, artistId + getString(R.string.album_cover_transition_name))
+                .addSharedElement(transitionElement, Utils.getSharedArtistName(getContext(), artistId))
                 .replace(R.id.contentPanel, details, DetailFragment.TAG)
                 .addToBackStack(DetailFragment.TAG)
                 .commit();

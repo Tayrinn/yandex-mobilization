@@ -27,7 +27,7 @@ public class HeadsetPlugReceiver extends BroadcastReceiver {
     }
 
     private void showYaShareDialog(final Context context) {
-        View content = ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.dialog_ya_share, null);
+        View content = LayoutInflater.from(context).inflate(R.layout.dialog_ya_share, null);
 
         ImageButton yaMusic = (ImageButton) content.findViewById(R.id.yamusic);
         yaMusic.setOnClickListener(new View.OnClickListener() {

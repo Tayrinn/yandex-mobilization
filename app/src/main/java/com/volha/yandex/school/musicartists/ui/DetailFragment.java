@@ -14,7 +14,9 @@ import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
+import com.volha.yandex.school.musicartists.Utils;
 import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.FragmentDetailsBinding;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
@@ -31,7 +33,7 @@ public class DetailFragment extends Fragment {
     public final static String TAG = "detail_fragment";
     public final static String TAG_ARTIST_ID = "tag_artist_id";
 
-    int artistId;
+    private int artistId;
 
     public static DetailFragment newInstance(int artistId) {
         DetailFragment fragment = new DetailFragment();
@@ -50,9 +52,7 @@ public class DetailFragment extends Fragment {
 
         artistId = getArguments().getInt(TAG_ARTIST_ID);
 
-        RealmConfiguration realmConfig = new RealmConfiguration.Builder(getContext()).build();
-        Realm realm = Realm.getInstance(realmConfig);
-
+        Realm realm = Realm.getInstance(MyApplication.from(getContext()).getRealmConfig());
         Artist artist = realm.where(Artist.class).equalTo("id", artistId).findFirst();
         realm.close();
 
@@ -64,11 +64,11 @@ public class DetailFragment extends Fragment {
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ImageLoader imageLoader = ImageLoader.getInstance();
+        ImageLoader imageLoader = MyApplication.from(getContext()).getImageLoader();
         imageLoader.displayImage(
                 artist.getCover().getBig(),
                 binding.background,
-                new DisplayImageOptions.Builder().cacheOnDisk(true).build()
+                MyApplication.from(getContext()).getImageOptions()
         );
 
         setRetainInstance(true);
@@ -79,10 +79,10 @@ public class DetailFragment extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ImageView image = (ImageView) view.findViewById(R.id.background);
-        ViewCompat.setTransitionName(image, artistId + getString(R.string.album_cover_transition_name));
+        ViewCompat.setTransitionName(image, Utils.getSharedArtistName(getContext(), artistId));
     }
 
-    OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
+    private OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
         @Override
         public void onBrowseClick(String link) {
             Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -90,5 +90,4 @@ public class DetailFragment extends Fragment {
             startActivity(intent);
         }
     };
-
 }

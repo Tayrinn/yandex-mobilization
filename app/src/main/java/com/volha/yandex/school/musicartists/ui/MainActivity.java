@@ -68,14 +68,13 @@ public class MainActivity extends AppCompatActivity {
                         .popBackStack(DetailFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     private void createAndSendEmailIntent() {
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.extra_subject));
-        intent.putExtra(Intent.EXTRA_EMAIL, getString(R.string.extra_email));
+        Intent intent = new Intent(Intent.ACTION_SEND)
+            .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.extra_subject))
+            .putExtra(Intent.EXTRA_EMAIL, getString(R.string.extra_email));
         startActivity(intent);
     }
 
