@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.volha.yandex.school.musicartists.DataProvider;
 import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.Utils;
@@ -24,6 +25,7 @@ import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import rx.subscriptions.CompositeSubscription;
 
 /**
  * Created by Volha on 15.07.2016.
@@ -34,6 +36,7 @@ public class DetailFragment extends Fragment {
     public final static String TAG_ARTIST_ID = "tag_artist_id";
 
     private int artistId;
+    private CompositeSubscription compositeSubscription = new CompositeSubscription();
 
     public static DetailFragment newInstance(int artistId) {
         DetailFragment fragment = new DetailFragment();
@@ -49,30 +52,33 @@ public class DetailFragment extends Fragment {
         FragmentDetailsBinding binding = FragmentDetailsBinding.inflate(inflater);
         ArtistDetailViewModel model = new ArtistDetailViewModel();
         binding.setArtist(model);
-
-        artistId = getArguments().getInt(TAG_ARTIST_ID);
-
-        Realm realm = Realm.getInstance(MyApplication.from(getContext()).getRealmConfig());
-        Artist artist = realm.where(Artist.class).equalTo("id", artistId).findFirst();
-        realm.close();
-
-        model.setArtist(artist);
-        model.setListener(onBrowserClickListener);
-
         Toolbar toolbar = binding.detailsToolbar;
-        toolbar.setTitle(artist.getName());
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
         ((MainActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        ImageLoader imageLoader = MyApplication.from(getContext()).getImageLoader();
-        imageLoader.displayImage(
-                artist.getCover().getBig(),
-                binding.background,
-                MyApplication.from(getContext()).getImageOptions()
-        );
+        artistId = getArguments().getInt(TAG_ARTIST_ID);
 
-        setRetainInstance(true);
+        DataProvider dataProvider = new DataProvider();
+        compositeSubscription.add(dataProvider.getArtist(getContext(), artistId)
+                .doOnNext(artist -> {
+                    model.setArtist(artist);
+                    model.setListener(onBrowserClickListener);
+                    toolbar.setTitle(artist.getName());
+                    ImageLoader imageLoader = MyApplication.from(getContext()).getImageLoader();
+                    imageLoader.displayImage(
+                            artist.getCover().getBig(),
+                            binding.background,
+                            MyApplication.from(getContext()).getImageOptions()
+                    );
+                })
+                .subscribe());
         return binding.getRoot();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        compositeSubscription.unsubscribe();
     }
 
     @Override
@@ -82,12 +88,9 @@ public class DetailFragment extends Fragment {
         ViewCompat.setTransitionName(image, Utils.getSharedArtistName(getContext(), artistId));
     }
 
-    private OnBrowserClickListener onBrowserClickListener = new OnBrowserClickListener() {
-        @Override
-        public void onBrowseClick(String link) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(link));
-            startActivity(intent);
-        }
+    private OnBrowserClickListener onBrowserClickListener = link -> {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(link));
+        startActivity(intent);
     };
 }

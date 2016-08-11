@@ -26,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
             fragment = new MainFragment();
             getSupportFragmentManager()
                     .beginTransaction()
-                    .addToBackStack(null)
                     .replace(R.id.contentPanel, fragment, MainFragment.TAG)
                     .commit();
         }

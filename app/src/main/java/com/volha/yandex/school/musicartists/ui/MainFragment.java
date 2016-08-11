@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.volha.yandex.school.musicartists.DataProvider;
 import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.Utils;
@@ -36,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
+import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -53,50 +55,40 @@ public class MainFragment extends Fragment {
     private ProgressBar progressBar;
 
     private ArtistsRecyclerAdapter adapter;
-    private CompositeSubscription compositeSubscription = new CompositeSubscription();
-    private Realm realm;
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        downloadArtists();
-    }
+    private CompositeSubscription compositeSubscription;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, null);
+        return inflater.inflate(R.layout.fragment_main, null);
+    }
+
+    @Override
+    public void onViewCreated(View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
         Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         ((MainActivity) getActivity()).setSupportActionBar(toolbar);
         progressBar = (ProgressBar) rootView.findViewById(R.id.list_progress);
-
-        realm = Realm.getInstance(MyApplication.from(getContext()).getRealmConfig());
-        RealmResults<Artist> artists = realm.where(Artist.class).findAll();
+        compositeSubscription = new CompositeSubscription();
 
         ImageLoader imageLoader = MyApplication.from(getContext()).getImageLoader();
 
-        adapter = new ArtistsRecyclerAdapter(getArrayListFromRealmResult(artists), imageLoader, this);
+        adapter = new ArtistsRecyclerAdapter(imageLoader, this);
 
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
 
-        if (artists.size() == 0) { // if there is no data in db, show progress
-            recyclerView.setVisibility(View.GONE);
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
         swipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
         swipeRefreshLayout.setColorSchemeColors(getIntColor(R.color.colorAccent), getIntColor(R.color.colorPrimary));
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                downloadArtists();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> downloadArtists());
+    }
 
-        return rootView;
+    @Override
+    public void onResume() {
+        super.onResume();
+        downloadArtists();
     }
 
     public int getIntColor(int color) {
@@ -105,39 +97,28 @@ public class MainFragment extends Fragment {
 
 
     public void downloadArtists() {
-        ApiServices apiServices = new ApiServices();
+        DataProvider dataProvider = new DataProvider();
         compositeSubscription.add(
-                apiServices
-                        .getArtists()
+                dataProvider.getArtists(getContext())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(Schedulers.io())
-                        .subscribe(new Subscriber<List<Artist>>() {
-                            @Override
-                            public void onCompleted() {
-                                stopProgress();
-                            }
-
-                            @Override
-                            public void onError(Throwable e) {
-                                stopProgress();
-                                Snackbar.make(recyclerView, R.string.no_data, Snackbar.LENGTH_INDEFINITE)
-                                        .setAction(R.string.reload, onReloadActionClick)
-                                        .setActionTextColor(ContextCompat.getColor(getContext(), R.color.colorAccent))
-                                        .show();
-                            }
-
-                            @Override
-                            public void onNext(List<Artist> artists) {
-                                realm.beginTransaction();
-                                realm.clear(Artist.class); // delete all manually
-                                realm.clear(Cover.class); // because realm don't have
-                                realm.clear(RealmString.class); // cascade delete
-                                realm.copyToRealm(artists);
-                                realm.commitTransaction();
-                                adapter.updateData(artists);
-                            }
+                        .take(2)
+                        .doOnCompleted(this::stopProgress)
+                        .retryWhen(this::showReloadSnackbar)
+                        .doOnNext(artists -> {
+                            adapter.updateData(artists);
+                            stopProgress();
                         })
+                        .subscribe()
         );
+    }
+
+    private Observable<Object> showReloadSnackbar(Observable<? extends Throwable> errors) {
+        return errors.flatMap( error ->
+                Observable.create(
+                        subscriber -> Snackbar.make( recyclerView, R.string.no_data, Snackbar.LENGTH_INDEFINITE )
+                                .setAction( R.string.reload, v -> { subscriber.onNext(null); subscriber.onCompleted(); })
+                                .setActionTextColor( ContextCompat.getColor( getContext(), R.color.colorAccent ) )
+                                .show()));
     }
 
     @Override
@@ -153,6 +134,7 @@ public class MainFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             TransitionInflater inflater = TransitionInflater.from(getContext());
             setExitTransition(inflater.inflateTransition(android.R.transition.fade));
+            setEnterTransition(inflater.inflateTransition(android.R.transition.fade));
             details.setEnterTransition(inflater.inflateTransition(android.R.transition.slide_bottom));
         }
 
@@ -164,25 +146,9 @@ public class MainFragment extends Fragment {
                 .commit();
     }
 
-    private View.OnClickListener onReloadActionClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            swipeRefreshLayout.setRefreshing(true);
-            downloadArtists();
-        }
-    };
-
     private void stopProgress() {
         swipeRefreshLayout.setRefreshing(false);
         progressBar.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
-    }
-
-    private List<Artist> getArrayListFromRealmResult(RealmResults<Artist> artists) {
-        List<Artist> result = new ArrayList<>(artists.size());
-        for (Artist artist : artists) {
-            result.add(artist);
-        }
-        return result;
     }
 }

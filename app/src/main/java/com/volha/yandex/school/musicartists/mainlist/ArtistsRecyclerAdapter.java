@@ -33,8 +33,8 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
     private ImageLoadingListener loadingListener;
     private MainFragment fragment;
 
-    public ArtistsRecyclerAdapter(List<Artist> artists, ImageLoader imageLoader, MainFragment fragment) {
-        this.artists = artists;
+    public ArtistsRecyclerAdapter(ImageLoader imageLoader, MainFragment fragment) {
+        this.artists = new ArrayList<>();
         this.imageLoader = imageLoader;
         this.fragment = fragment;
         setHasStableIds(true);
@@ -73,14 +73,11 @@ public class ArtistsRecyclerAdapter extends RecyclerView.Adapter<ArtistViewHolde
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
         final ArtistViewHolder holder = new ArtistViewHolder(ListItemArtistBinding.inflate(inflater, parent, false));
-        holder.viewModel.setListener(new OnArtistListItemClickListener() {
-            @Override
-            public void onItemClick() {
-                int position = holder.getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    Artist artist = artists.get(position);
-                    fragment.startDetailFragment(holder.binding.albumCover, artist.getId());
-                }
+        holder.viewModel.setListener(() -> {
+            int position = holder.getAdapterPosition();
+            if (position != RecyclerView.NO_POSITION) {
+                Artist artist = artists.get(position);
+                fragment.startDetailFragment(holder.binding.albumCover, artist.getId());
             }
         });
         return holder;
