@@ -50,6 +50,10 @@ public class DBContentProvider extends ContentProvider implements DBContract{
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor cursor = null;
+        if (!TextUtils.isEmpty(selection) || !TextUtils.isEmpty(sortOrder)
+                || (selectionArgs != null && selectionArgs.length > 0)) {
+            throw new UnsupportedOperationException("Selection and order parameters was not implemented");
+        }
         switch (uriMatcher.match(uri)) {
             case URI_ARTISTS:
                 cursor = dbBackend.getArtistsAndCovers();
@@ -61,8 +65,6 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-//        Log.d("cursor", "count=" + cursor.getCount());
-//        cursor.setNotificationUri(getContext().getContentResolver(), ARTIST_CONTENT_URI);
         return cursor;
     }
 
@@ -83,10 +85,7 @@ public class DBContentProvider extends ContentProvider implements DBContract{
     public Uri insert(Uri uri, ContentValues values) {
         if (uriMatcher.match(uri) != URI_ARTISTS)
             throw new IllegalArgumentException("Wrong URI: " + uri);
-
         long rowID = dbBackend.insertArtist(values);
-        // уведомляем ContentResolver, что данные по адресу resultUri изменились
-//        getContext().getContentResolver().notifyChange(resultUri, null);
         return ContentUris.withAppendedId(ARTIST_CONTENT_URI, rowID);
     }
 

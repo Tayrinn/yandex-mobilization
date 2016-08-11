@@ -18,24 +18,31 @@ import com.volha.yandex.school.musicartists.data.Cover;
 public class DbBackend implements DBContract {
 
     private SQLiteDatabase db;
+    private ArtistsOpenHelper helper;
 
     public DbBackend(Context context) {
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(context);
+        helper = new ArtistsOpenHelper(context);
         db = helper.getWritableDatabase();
         db.enableWriteAheadLogging();
+    }
+
+    private void openDBIfNeeded() {
+        if (!db.isOpen())
+            db = helper.getWritableDatabase();
     }
 
     private static final String ARTIST_QUERY = "SELECT *, " +
             "group_concat(" + GenresTable.NAME + ") as " + ArtistTable.GENRES
             + " FROM " + ARTIST + " as a"
-            + " JOIN " + COVER + " as c"
+            + " LEFT JOIN " + COVER + " as c"
             + " ON a." + ArtistTable.COVER_ID + " = c." + CoverTable.ID
-            + " JOIN " + ARTISTS_GENRES + " as ag"
+            + " LEFT JOIN " + ARTISTS_GENRES + " as ag"
             + " ON a." + ArtistTable.ID + " = ag." + ArtistsGenresTable.ARTIST_ID
             + " JOIN " + GENRES + " as g"
             + " ON ag." + ArtistsGenresTable.GENRE_ID + " = g." + GenresTable.ID;
 
     public long insertArtist(Artist artist) {
+        openDBIfNeeded();
         db.beginTransaction();
         long id = -1;
         try {
@@ -63,11 +70,13 @@ public class DbBackend implements DBContract {
     }
 
     public long insertArtist(ContentValues values) {
+        openDBIfNeeded();
         Artist artist = DBUtils.getArtistFromValues(values);
         return insertArtist(artist);
     }
 
     public int  bulkInsertArtists(ContentValues[] values) {
+        openDBIfNeeded();
         db.beginTransaction();
         int count = 0;
         try {
@@ -83,14 +92,17 @@ public class DbBackend implements DBContract {
     }
 
     public int deleteArtist(String selection, String[] selectionArgs) {
+        openDBIfNeeded();
         return db.delete(ARTIST, selection, selectionArgs);
     }
 
     public int updateArtist(ContentValues values, String selection, String[] selectionArgs) {
+        openDBIfNeeded();
         return db.update(ARTIST, values, selection, selectionArgs);
     }
 
     private long insertCover(Cover cover) {
+        openDBIfNeeded();
         ContentValues values = new ContentValues();
         values.put(CoverTable.BIG, cover.getBig());
         values.put(CoverTable.SMALL, cover.getSmall());
@@ -98,6 +110,7 @@ public class DbBackend implements DBContract {
     }
 
     private long insertGenre(String genre) {
+        openDBIfNeeded();
         ContentValues values = new ContentValues();
         values.put(GenresTable.NAME, genre);
         long id = db.insertWithOnConflict(GENRES, null, values, SQLiteDatabase.CONFLICT_IGNORE);
@@ -108,6 +121,7 @@ public class DbBackend implements DBContract {
     }
 
     private long insertArtistGenre(int artistId, long genreId) {
+        openDBIfNeeded();
         ContentValues values = new ContentValues();
         values.put(ArtistsGenresTable.ARTIST_ID, artistId);
         values.put(ArtistsGenresTable.GENRE_ID, genreId);
@@ -115,6 +129,7 @@ public class DbBackend implements DBContract {
     }
 
     private long getGenreId(String genre) {
+        openDBIfNeeded();
         String query = "SELECT " + GenresTable.ID + " FROM " + GENRES
                 + " WHERE " + GenresTable.NAME + " like ?";
         Cursor cursor = db.rawQuery(query, new String[]{genre});
@@ -125,6 +140,7 @@ public class DbBackend implements DBContract {
     }
 
     public int clearAll() {
+        openDBIfNeeded();
         int cnt = db.delete(ARTIST, null, null);
         db.delete(COVER, null, null);
         db.delete(ARTISTS_GENRES, null, null);
@@ -133,17 +149,20 @@ public class DbBackend implements DBContract {
     }
 
     public Cursor getArtistsAndCovers() {
+        openDBIfNeeded();
         String query = ARTIST_QUERY + " GROUP BY a." + ArtistTable.ID;
         return db.rawQuery(query, null);
     }
 
     public Cursor getArtist(String id) {
+        openDBIfNeeded();
         String query = ARTIST_QUERY + " WHERE a." + ArtistTable.ID + " = ?";
         return db.rawQuery(query, new String[]{id});
     }
 
     @VisibleForTesting
     public int getCountAndClose(String tableName) {
+        openDBIfNeeded();
         Cursor cursor = db.rawQuery("SELECT count(*) as size FROM " + tableName, null);
         cursor.moveToFirst();
         int size = cursor.getInt(0);
