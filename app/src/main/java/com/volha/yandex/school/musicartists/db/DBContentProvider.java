@@ -38,38 +38,31 @@ public class DBContentProvider extends ContentProvider implements DBContract{
         uriMatcher.addURI(AUTHORITY, ARTIST_PATH + "/#", URI_ARTISTS_ID);
     }
 
-    SQLiteDatabase db;
     DbBackend dbBackend;
-    ArtistsOpenHelper helper;
 
     @Override
     public boolean onCreate() {
-        helper = new ArtistsOpenHelper(getContext());
-        dbBackend = new DbBackend();
-        db = helper.getWritableDatabase();
-        db.enableWriteAheadLogging();
+        dbBackend = new DbBackend(getContext());
         return true;
     }
 
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        if (!db.isOpen())
-            db = helper.getWritableDatabase();
         Cursor cursor = null;
         switch (uriMatcher.match(uri)) {
             case URI_ARTISTS:
-                cursor = dbBackend.getArtistsAndCovers(db);
+                cursor = dbBackend.getArtistsAndCovers();
                 break;
             case URI_ARTISTS_ID:
                 String id = uri.getLastPathSegment();
-                cursor = dbBackend.getArtist(db, id);
+                cursor = dbBackend.getArtist(id);
                 break;
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        Log.d("cursor", "count=" + cursor.getCount());
-        cursor.setNotificationUri(getContext().getContentResolver(), ARTIST_CONTENT_URI);
+//        Log.d("cursor", "count=" + cursor.getCount());
+//        cursor.setNotificationUri(getContext().getContentResolver(), ARTIST_CONTENT_URI);
         return cursor;
     }
 
@@ -91,9 +84,7 @@ public class DBContentProvider extends ContentProvider implements DBContract{
         if (uriMatcher.match(uri) != URI_ARTISTS)
             throw new IllegalArgumentException("Wrong URI: " + uri);
 
-        if (!db.isOpen())
-            db = helper.getWritableDatabase();
-        long rowID = dbBackend.insertArtist(db, values);
+        long rowID = dbBackend.insertArtist(values);
         Uri resultUri = ContentUris.withAppendedId(ARTIST_CONTENT_URI, rowID);
         // уведомляем ContentResolver, что данные по адресу resultUri изменились
         getContext().getContentResolver().notifyChange(resultUri, null);
@@ -116,13 +107,11 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        if (!db.isOpen())
-            db = helper.getWritableDatabase();
         int cnt = 0;
         if (selection == null && selectionArgs == null) {
-            cnt = dbBackend.clearAll(db);
+            cnt = dbBackend.clearAll();
         } else {
-            cnt = dbBackend.deleteArtist(db, selection, selectionArgs);
+            cnt = dbBackend.deleteArtist(selection, selectionArgs);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return cnt;
@@ -144,9 +133,7 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             default:
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
-        if (!db.isOpen())
-            db = helper.getWritableDatabase();
-        int cnt = dbBackend.updateArtist(db, values, selection, selectionArgs);
+        int cnt = dbBackend.updateArtist(values, selection, selectionArgs);
         getContext().getContentResolver().notifyChange(uri, null);
         return cnt;
     }

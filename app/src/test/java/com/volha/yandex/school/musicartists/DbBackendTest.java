@@ -25,52 +25,41 @@ public class DbBackendTest implements DBContract {
 
     @Test
     public void insertArtist(){
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
+        DbBackend dbBackend = new DbBackend(RuntimeEnvironment.application);
         Artist artist = createArtist();
-        dbBackend.insertArtist(db, artist);
+        dbBackend.insertArtist(artist);
 
-        Assert.assertEquals(1, dbBackend.getCountAndClose(db, ARTIST));
-        Assert.assertEquals(1, dbBackend.getCountAndClose(db, COVER));
-        Assert.assertEquals(2, dbBackend.getCountAndClose(db, GENRES));
-        Assert.assertEquals(2, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
+        Assert.assertEquals(1, dbBackend.getCountAndClose(ARTIST));
+        Assert.assertEquals(1, dbBackend.getCountAndClose(COVER));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(GENRES));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(ARTISTS_GENRES));
     }
 
     @Test
     public void clearAll() {
-
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
+        DbBackend dbBackend = new DbBackend(RuntimeEnvironment.application);
         Artist artist = createArtist();
-        dbBackend.insertArtist(db, artist);
+        dbBackend.insertArtist(artist);
 
-        Assert.assertEquals(1, dbBackend.getCountAndClose(db, ARTIST));
-        Assert.assertEquals(1, dbBackend.getCountAndClose(db, COVER));
-        Assert.assertEquals(2, dbBackend.getCountAndClose(db, GENRES));
-        Assert.assertEquals(2, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
+        Assert.assertEquals(1, dbBackend.getCountAndClose(ARTIST));
+        Assert.assertEquals(1, dbBackend.getCountAndClose(COVER));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(GENRES));
+        Assert.assertEquals(2, dbBackend.getCountAndClose(ARTISTS_GENRES));
 
-        dbBackend.clearAll(db);
+        dbBackend.clearAll();
 
-        Assert.assertEquals(0, dbBackend.getCountAndClose(db, ARTIST));
-        Assert.assertEquals(0, dbBackend.getCountAndClose(db, COVER));
-        Assert.assertEquals(0, dbBackend.getCountAndClose(db, GENRES));
-        Assert.assertEquals(0, dbBackend.getCountAndClose(db, ARTISTS_GENRES));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(ARTIST));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(COVER));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(GENRES));
+        Assert.assertEquals(0, dbBackend.getCountAndClose(ARTISTS_GENRES));
 
     }
 
     @Test
     public void getArtistAndCoversIsEmpty() {
+        DbBackend dbBackend = new DbBackend(RuntimeEnvironment.application);
 
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
-
-        Cursor artistAndCoverCursor = dbBackend.getArtistsAndCovers(db);
+        Cursor artistAndCoverCursor = dbBackend.getArtistsAndCovers();
         Assert.assertEquals(0, artistAndCoverCursor.getCount());
 
         artistAndCoverCursor.close();
@@ -78,14 +67,11 @@ public class DbBackendTest implements DBContract {
 
     @Test
     public void getArtistAndCover() {
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
+        DbBackend dbBackend = new DbBackend(RuntimeEnvironment.application);
         Artist artist = createArtist();
-        dbBackend.insertArtist(db, artist);
+        dbBackend.insertArtist(artist);
 
-        Cursor cursor = dbBackend.getArtistsAndCovers(db);
+        Cursor cursor = dbBackend.getArtistsAndCovers();
         cursor.moveToFirst();
 
         Assert.assertEquals(1, cursor.getInt(cursor.getColumnIndex(ArtistTable.ID)));
@@ -97,14 +83,11 @@ public class DbBackendTest implements DBContract {
 
     @Test
     public void getArtist() {
-        ArtistsOpenHelper helper = new ArtistsOpenHelper(RuntimeEnvironment.application);
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        DbBackend dbBackend = new DbBackend();
+        DbBackend dbBackend = new DbBackend(RuntimeEnvironment.application);
         Artist artist = createArtist();
-        dbBackend.insertArtist(db, artist);
+        dbBackend.insertArtist(artist);
 
-        Cursor cursor = dbBackend.getArtist(db, "1");
+        Cursor cursor = dbBackend.getArtist("1");
         cursor.moveToFirst();
 
         Assert.assertEquals(1, cursor.getInt(cursor.getColumnIndex(ArtistTable.ID)));
