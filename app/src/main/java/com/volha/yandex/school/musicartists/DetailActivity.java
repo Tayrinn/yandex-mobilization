@@ -52,7 +52,6 @@ public class DetailActivity extends AppCompatActivity {
         // get artistId from intent
         final int artistId = getIntent().getIntExtra(TAG_ARTIST_ID, 0);
 
-        final DbBackend dbBackend = new DbBackend();
         compositeSubscription.add(Observable.create(new Observable.OnSubscribe<Cursor>() {
             @Override
             public void call(Subscriber<? super Cursor> subscriber) {
@@ -63,7 +62,7 @@ public class DetailActivity extends AppCompatActivity {
                                 + artistId),
                         null, null, null, null
                 );
-                if (artistCursor == null) {
+                if (artistCursor == null || artistCursor.getCount() == 0) {
                     subscriber.onError(new NullPointerException());
                 } else {
                     subscriber.onNext(artistCursor);

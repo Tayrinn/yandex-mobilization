@@ -1,5 +1,6 @@
 package com.volha.yandex.school.musicartists;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadArtists() {
 
-        ApiServices apiServices = new ApiServices();
+        final ApiServices apiServices = new ApiServices();
         compositeSubscription.add(
             apiServices
                 .getArtists()
@@ -118,11 +119,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public List<Artist> call(List<Artist> artists) {
                         getContentResolver().delete(DBContentProvider.ARTIST_CONTENT_URI, null, null);
-                        for (Artist artist : artists) {
-                            getContentResolver().insert(
-                                    DBContentProvider.ARTIST_CONTENT_URI,
-                                    DBUtils.getValuesFromArtist(artist));
+                        ContentValues[] values = new ContentValues[artists.size()];
+                        for (int i = 0; i < artists.size(); ++i) {
+                            values[i] = DBUtils.getValuesFromArtist(artists.get(i));
                         }
+                        getContentResolver().bulkInsert(
+                                DBContentProvider.ARTIST_CONTENT_URI,
+                                values);
                         return artists;
                     }
                 })

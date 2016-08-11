@@ -85,10 +85,16 @@ public class DBContentProvider extends ContentProvider implements DBContract{
             throw new IllegalArgumentException("Wrong URI: " + uri);
 
         long rowID = dbBackend.insertArtist(values);
-        Uri resultUri = ContentUris.withAppendedId(ARTIST_CONTENT_URI, rowID);
         // уведомляем ContentResolver, что данные по адресу resultUri изменились
-        getContext().getContentResolver().notifyChange(resultUri, null);
-        return resultUri;
+//        getContext().getContentResolver().notifyChange(resultUri, null);
+        return ContentUris.withAppendedId(ARTIST_CONTENT_URI, rowID);
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        if (uriMatcher.match(uri) != URI_ARTISTS)
+            throw new IllegalArgumentException("Wrong URI: " + uri);
+        return dbBackend.bulkInsertArtists(values);
     }
 
     @Override

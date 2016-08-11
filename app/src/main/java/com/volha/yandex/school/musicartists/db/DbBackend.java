@@ -67,6 +67,21 @@ public class DbBackend implements DBContract {
         return insertArtist(artist);
     }
 
+    public int  bulkInsertArtists(ContentValues[] values) {
+        db.beginTransaction();
+        int count = 0;
+        try {
+            for (ContentValues value : values) {
+                if (insertArtist(value) > 0)
+                    count++;
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        return count;
+    }
+
     public int deleteArtist(String selection, String[] selectionArgs) {
         return db.delete(ARTIST, selection, selectionArgs);
     }
