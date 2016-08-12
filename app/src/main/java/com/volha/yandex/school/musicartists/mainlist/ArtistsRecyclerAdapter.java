@@ -15,7 +15,7 @@ import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.Utils;
-import com.volha.yandex.school.musicartists.data.Artist;
+import com.volha.yandex.school.mobilization.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.ListItemArtistBinding;
 import com.volha.yandex.school.musicartists.ui.MainFragment;
 

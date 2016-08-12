@@ -12,19 +12,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.volha.yandex.school.musicartists.DataProvider;
+import com.volha.yandex.school.mobilization.DataProvider;
 import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.Utils;
-import com.volha.yandex.school.musicartists.data.Artist;
 import com.volha.yandex.school.musicartists.databinding.FragmentDetailsBinding;
 import com.volha.yandex.school.musicartists.detail.ArtistDetailViewModel;
 import com.volha.yandex.school.musicartists.detail.OnBrowserClickListener;
 
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -59,7 +55,7 @@ public class DetailFragment extends Fragment {
         artistId = getArguments().getInt(TAG_ARTIST_ID);
 
         DataProvider dataProvider = new DataProvider();
-        compositeSubscription.add(dataProvider.getArtist(getContext(), artistId)
+        compositeSubscription.add(dataProvider.getArtist(MyApplication.from(getContext()).getRealmConfig(), artistId)
                 .doOnNext(artist -> {
                     model.setArtist(artist);
                     model.setListener(onBrowserClickListener);

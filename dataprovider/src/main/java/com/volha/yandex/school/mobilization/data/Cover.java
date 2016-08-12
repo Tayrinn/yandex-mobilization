@@ -1,4 +1,4 @@
-package com.volha.yandex.school.musicartists.data;
+package com.volha.yandex.school.mobilization.data;
 
 /**
  * Created by Volha on 17.04.2016.

@@ -1,6 +1,6 @@
-package com.volha.yandex.school.musicartists.retrofit;
+package com.volha.yandex.school.mobilization.retrofit;
 
-import com.volha.yandex.school.musicartists.data.Artist;
+import com.volha.yandex.school.mobilization.data.Artist;
 
 import java.util.List;
 

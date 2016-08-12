@@ -5,7 +5,7 @@ import android.databinding.ObservableField;
 import android.databinding.ObservableInt;
 import android.view.View;
 
-import com.volha.yandex.school.musicartists.data.Artist;
+import com.volha.yandex.school.mobilization.data.Artist;
 
 /**
  * Created by Volha on 17.04.2016.

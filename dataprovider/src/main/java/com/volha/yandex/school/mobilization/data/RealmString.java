@@ -1,4 +1,4 @@
-package com.volha.yandex.school.musicartists.data;
+package com.volha.yandex.school.mobilization.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

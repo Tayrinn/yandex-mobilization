@@ -1,21 +1,19 @@
-package com.volha.yandex.school.musicartists;
+package com.volha.yandex.school.mobilization;
 
 import android.content.Context;
 
-import com.volha.yandex.school.musicartists.data.Artist;
-import com.volha.yandex.school.musicartists.data.Cover;
-import com.volha.yandex.school.musicartists.data.RealmString;
-import com.volha.yandex.school.musicartists.retrofit.ApiServices;
+import com.volha.yandex.school.mobilization.data.Artist;
+import com.volha.yandex.school.mobilization.data.Cover;
+import com.volha.yandex.school.mobilization.data.RealmString;
+import com.volha.yandex.school.mobilization.retrofit.ApiServices;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -24,9 +22,9 @@ import rx.schedulers.Schedulers;
 
 public class DataProvider {
 
-    public Observable<List<Artist>> getArtists(final Context context) {
+    public Observable<List<Artist>> getArtists(RealmConfiguration config) {
         ApiServices apiServices = new ApiServices();
-        final Realm realm = Realm.getInstance(MyApplication.from(context).getRealmConfig());
+        final Realm realm = Realm.getInstance(config);
         Observable<List<Artist>> fromInternet = apiServices
                 .getArtists()
                 .subscribeOn(Schedulers.io())
@@ -46,8 +44,8 @@ public class DataProvider {
         return Observable.merge(fromDB, fromInternet);
     }
 
-    public Observable<Artist> getArtist(Context context, int artistId) {
-        Realm realm = Realm.getInstance(MyApplication.from(context).getRealmConfig());
+    public Observable<Artist> getArtist(RealmConfiguration config, int artistId) {
+        Realm realm = Realm.getInstance(config);
         return realm.where(Artist.class).equalTo("id", artistId).findFirst().asObservable();
     }
 

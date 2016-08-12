@@ -1,6 +1,5 @@
 package com.volha.yandex.school.musicartists.ui;
 
-import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,34 +12,20 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.transition.TransitionInflater;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.volha.yandex.school.musicartists.DataProvider;
+import com.volha.yandex.school.mobilization.DataProvider;
 import com.volha.yandex.school.musicartists.MyApplication;
 import com.volha.yandex.school.musicartists.R;
 import com.volha.yandex.school.musicartists.Utils;
-import com.volha.yandex.school.musicartists.data.Artist;
-import com.volha.yandex.school.musicartists.data.Cover;
-import com.volha.yandex.school.musicartists.data.RealmString;
 import com.volha.yandex.school.musicartists.mainlist.ArtistsRecyclerAdapter;
-import com.volha.yandex.school.musicartists.retrofit.ApiServices;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
-import io.realm.RealmResults;
 import rx.Observable;
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import rx.subscriptions.CompositeSubscription;
 
 /**
@@ -99,7 +84,7 @@ public class MainFragment extends Fragment {
     public void downloadArtists() {
         DataProvider dataProvider = new DataProvider();
         compositeSubscription.add(
-                dataProvider.getArtists(getContext())
+                dataProvider.getArtists(MyApplication.from(getContext()).getRealmConfig())
                         .observeOn(AndroidSchedulers.mainThread())
                         .take(2)
                         .doOnCompleted(this::stopProgress)
